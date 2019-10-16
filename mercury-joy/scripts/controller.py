@@ -98,12 +98,18 @@ class JoyController:
                     # mercury will detect it pressed with value of 1.0!
                     axes_value = self._map_axes_value(
                         axes_value, map_axes_item)
+
+            is_on_axes_to_buttons = False
             for axes_to_button in self.axes_to_button:
                 if axes_to_button['axes_idx'] == idx:
+                    is_on_axes_to_buttons = True
                     if axes_to_button['mode'] == 'less-than' and axes_value < axes_to_button['threshold'] \
                             or axes_to_button['mode'] == 'greater-than' and axes_value > axes_to_button['threshold']:
-                        mercury_joy.buttons_name.append(
-                            axes_to_button['button_name'])
+                        mercury_joy.button_names.append(
+                            axes_to_button['button_name'])                        
+            if is_on_axes_to_buttons:
+                continue
+            
             if abs(axes_value) < self.axes_threshold:
                 continue
             if idx < len(self.axes_names):

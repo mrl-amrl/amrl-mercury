@@ -1,0 +1,12 @@
+<launch>
+    <arg name="joy_device" default="/dev/input/js0"/>
+    <arg name="repeat_rate" default="0.0"/>
+
+    <node pkg="joy" type="joy_node" name="ros_joy">
+        <param name="dev" value="$(arg joy_device)"/>
+        <param name="autorepeat_rate" value="$(arg repeat_rate)"/>
+    </node>
+
+    <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy"/>    
+    <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>    
+</launch>
