@@ -4,9 +4,9 @@
     <arg name="joy_config" default="$(find mercury_trajectory)/config/joy.yaml"/>
     <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
     <arg name="display_gui" default="true"/>
-    <arg name="xsense_device" default="/dev/ttyUSB0"/>
+    <arg name="xsense_device" default="/dev/ttyUSB.xsense"/>
 
-    <node pkg="joy" type="joy_node" name="ros_joy">
+    <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
         <param name="dev" value="$(arg joy_device)"/>
         <param name="autorepeat_rate" value="$(arg repeat_rate)"/>
     </node>
@@ -16,18 +16,23 @@
     <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
     <node name="dynamic_reconfigure_load_joy" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_joy $(arg joy_config)" />
     
-    <include file="$(find xsens_driver)/launch/xsens_driver.launch">
+    <include file="$(find mercury_launch)/launch/xsens_driver.launch">
         <arg name="device" value="$(arg xsense_device)"/>
+        <arg name="respawn" value="true"/>        
     </include>
 
-    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback">
+    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
         <param name="reciver_main_board_port" type="int" value="3031"/>
         <param name="reciver_sensor_board_port" type="int" value="3040"/>
         <param name="queue_size" type="int" value="10"/>
         <remap from="/feedback/co2" to="/mercury/gui/co2"/>
     </node>
 
-    <include if="$(arg display_gui)" file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    <node pkg="mercury_usb" type="usb-node.py" name="mercury_usb" respawn="true" respawn_delay="1">
+        <param name="devices" value="$(arg xsense_device)"/>
+    </node>
+
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     <node if="$(arg display_gui)" pkg="mercury_gui" type="electron" name="mercury_gui" args="index.js" cwd="node"/>
-    <node if="$(arg display_gui)" pkg="mercury_gui" type="imu.py" name="mercury_gui_imu"/>
+    <node pkg="mercury_gui" type="imu.py" name="mercury_gui_imu"/>
 </launch>
