@@ -1,1 +1,1 @@
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="d38b", ATTRS{serial}=="XSU4ULMI", SYMLINK+="ttyUSB.xsense", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="d38b", SYMLINK+="xsense", MODE="0666"

@@ -6,3 +6,4 @@ int8 arm_rear
 int8 speed
 int8 right
 int8 left
+bool armed

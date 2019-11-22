@@ -8,11 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-add_service_files(
-  FILES
-    SetEnabled.srv
-)
-
 add_message_files(
   FILES
     EposError.msg

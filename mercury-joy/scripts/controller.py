@@ -111,28 +111,13 @@ class JoyController:
                 if axes_to_button['axes_idx'] == idx:
                     is_on_axes_to_buttons = True                    
                     if axes_to_button['mode'] == 'less-than' and axes_value < axes_to_button['threshold']:
-                        # if self.axes_button_trigger.get(axes_to_button['button_name'], True):
                         mercury_joy.button_names.append(
                             axes_to_button['button_name']
                         )
-                            # self.axes_button_trigger[axes_to_button['button_name']] = False
-                    # elif axes_to_button['mode'] == 'less-than' and axes_value > axes_to_button['threshold'] / 2:
-                    #     if axes_to_button['button_name'] in self.axes_button_trigger:
-                    #         del self.axes_button_trigger[axes_to_button['button_name']]
                     if axes_to_button['mode'] == 'greater-than' and axes_value > axes_to_button['threshold']:
-                        # if self.axes_button_trigger.get(axes_to_button['button_name'], True):
                         mercury_joy.button_names.append(
                             axes_to_button['button_name']
                         )
-                            # self.axes_button_trigger[axes_to_button['button_name']] = False
-                    # elif axes_to_button['mode'] == 'greater-than' and axes_value < axes_to_button['threshold'] / 2:
-                    #     if axes_to_button['button_name'] in self.axes_button_trigger:
-                    #         del self.axes_button_trigger[axes_to_button['button_name']]
-
-            # for key, value in self.axes_button_trigger.items():
-            #     if not value and key not in mercury_joy.button_names:
-            #         mercury_joy.button_names.append(key)
-
             if is_on_axes_to_buttons:
                 continue
 
@@ -148,7 +133,7 @@ class JoyController:
     def spin(self):
         rate = rospy.Rate(int(rospy.get_param(
                 '~mercury_publish_rate',
-                default='100'
+                default='30'
         )))
         while not rospy.is_shutdown():
             if self.publisher.get_num_connections() > 0:

@@ -4,6 +4,7 @@ from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from socket_connection import MovementConnection, PowerManagementConnection
 from mercury_trajectory.cfg import TrajectoryConfig
 from mercury_trajectory.msg import TrajectoryData
+from mercury_trajectory.srv import SetEnabled
 from mercury import Joy
 
 
@@ -27,6 +28,10 @@ class TrajectoryController:
             'btn_both_flipper_down': 'btn_both_flipper_down',
         }
 
+        self.is_armed = False
+
+        rospy.Service("/mercury/trajectory/arm_enable", SetEnabled, self._serive_callback)
+
         self.joy = Joy()
         # connect to dynamic reconfigure server.
         DynamicReconfigureServer(TrajectoryConfig, self._configuration)
@@ -43,6 +48,11 @@ class TrajectoryController:
 
         self.power_connection.send(led_state=0, emg_stop=0)
         self.commands = self.new_message()
+
+    def _serive_callback(self, data):
+        self.is_armed = data.enabled
+        self.power_connection.send(led_state=0, emg_stop=1 if self.is_armed else 0)
+        return data.enabled
 
     def axes_change(self, value, name):
         if name == 'linear_axes':
@@ -82,7 +92,7 @@ class TrajectoryController:
         elif name == 'btn_turn_left':
             self.commands['angular'] = -1
 
-    def send(self):
+    def send(self):    
         left_velocity = self.commands['linear'] * \
             self.max_speed - self.commands['angular'] * self.max_speed
         right_velocity = self.commands['linear'] * \
@@ -105,14 +115,16 @@ class TrajectoryController:
             msg.arm_rear = self.commands['arm_rear_direction']
             msg.left = left_velocity
             msg.right = right_velocity
+            msg.armed = self.is_armed
             self.publisher.publish(msg)
-
-        self.movement_connection.send(
-            left_velocity=left_velocity,
-            right_velocity=right_velocity,
-            arm_front_direction=self.commands['arm_front_direction'],
-            arm_rear_direction=self.commands['arm_rear_direction'],
-        )
+        
+        if self.is_armed:
+            self.movement_connection.send(
+                left_velocity=left_velocity,
+                right_velocity=right_velocity,
+                arm_front_direction=self.commands['arm_front_direction'],
+                arm_rear_direction=self.commands['arm_rear_direction'],
+            )
 
     def new_message(self):
         return {

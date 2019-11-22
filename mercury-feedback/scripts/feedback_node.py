@@ -4,7 +4,6 @@ import rospy
 import socket
 import sys
 from std_msgs.msg import UInt8
-from mercury_feedback.srv import SetEnabled
 from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
@@ -16,9 +15,6 @@ class MRLRobotFeedBack:
     def __init__(self):
         main_port, sensor_port, queue_size = self.get_params()
         self.feedback_protocol = FeedBackProtocol(main_port, sensor_port)
-        self.emergency_enable = True
-        self.emergency_stop_srv = rospy.ServiceProxy(
-            '/mrl_ocu_driver/set_emergency_stop_led', SetEnabled)
         self.movement_pub = rospy.Publisher(
             '/feedback/movement', MovementFeedback, queue_size=queue_size)
         self.manipulator_pub = rospy.Publisher(
@@ -100,14 +96,6 @@ class MRLRobotFeedBack:
         robot_feedback_msg.torque_joint1 = self.feedback_protocol.torque.manip_joint2
         robot_feedback_msg.torque_joint2 = self.feedback_protocol.torque.manip_joint3
         self.robot_feedback_pub.publish(robot_feedback_msg)
-
-    def send_emergency_stop_mode(self):
-        if self.feedback_protocol.battery.power_battery == 0 and self.emergency_enable == False:
-            self.emergency_enable = True
-            self.emergency_stop_srv(self.emergency_enable)
-        elif self.feedback_protocol.battery.power_battery > 0 and self.emergency_enable == True:
-            self.emergency_enable = False
-            self.emergency_stop_srv(self.emergency_enable)
 
     def get_params(self):
         reciver_main_board_port = rospy.get_param('~reciver_main_board_port', 3031)
