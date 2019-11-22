@@ -14,6 +14,8 @@ class JoyController:
         self.axes_threshold = 0.025
         self.map_axes = []
 
+        self.axes_button_trigger = {}
+
         # connect to dynamic reconfigure server.
         DynamicReconfigureServer(JoyConfig, self.configuration)
 
@@ -31,14 +33,18 @@ class JoyController:
             MercuryJoy,
             queue_size=int(rospy.get_param(
                 '~mercury_queue_size',
-                default='10'
+                default='1'
             ))
         )
 
         # register a callback for ros shutdown
         rospy.on_shutdown(self.shutdown)
 
+        self.message = MercuryJoy()
+
     def configuration(self, config, level):
+        self.axes_button_trigger = {}
+
         # get button_names from dynamic-reconfigure server
         button_names = str(config['button_names'])
         self.button_names = [button_name.strip()
@@ -98,54 +104,82 @@ class JoyController:
                     # mercury will detect it pressed with value of 1.0!
                     axes_value = self._map_axes_value(
                         axes_value, map_axes_item)
+                    break
 
             is_on_axes_to_buttons = False
             for axes_to_button in self.axes_to_button:
                 if axes_to_button['axes_idx'] == idx:
-                    is_on_axes_to_buttons = True
-                    if axes_to_button['mode'] == 'less-than' and axes_value < axes_to_button['threshold'] \
-                            or axes_to_button['mode'] == 'greater-than' and axes_value > axes_to_button['threshold']:
+                    is_on_axes_to_buttons = True                    
+                    if axes_to_button['mode'] == 'less-than' and axes_value < axes_to_button['threshold']:
+                        # if self.axes_button_trigger.get(axes_to_button['button_name'], True):
                         mercury_joy.button_names.append(
-                            axes_to_button['button_name'])                        
+                            axes_to_button['button_name']
+                        )
+                            # self.axes_button_trigger[axes_to_button['button_name']] = False
+                    # elif axes_to_button['mode'] == 'less-than' and axes_value > axes_to_button['threshold'] / 2:
+                    #     if axes_to_button['button_name'] in self.axes_button_trigger:
+                    #         del self.axes_button_trigger[axes_to_button['button_name']]
+                    if axes_to_button['mode'] == 'greater-than' and axes_value > axes_to_button['threshold']:
+                        # if self.axes_button_trigger.get(axes_to_button['button_name'], True):
+                        mercury_joy.button_names.append(
+                            axes_to_button['button_name']
+                        )
+                            # self.axes_button_trigger[axes_to_button['button_name']] = False
+                    # elif axes_to_button['mode'] == 'greater-than' and axes_value < axes_to_button['threshold'] / 2:
+                    #     if axes_to_button['button_name'] in self.axes_button_trigger:
+                    #         del self.axes_button_trigger[axes_to_button['button_name']]
+
+            # for key, value in self.axes_button_trigger.items():
+            #     if not value and key not in mercury_joy.button_names:
+            #         mercury_joy.button_names.append(key)
+
             if is_on_axes_to_buttons:
                 continue
-            
+
             if abs(axes_value) < self.axes_threshold:
                 continue
             if idx < len(self.axes_names):
                 mercury_joy.axes_names.append(self.axes_names[idx])
                 mercury_joy.axes_values.append(axes_value)
-        self.publisher.publish(mercury_joy)
 
-    @staticmethod
-    def spin():
-        rospy.spin()
+        self.message = mercury_joy
+        # self.publisher.publish(self.message)
+
+    def spin(self):
+        rate = rospy.Rate(int(rospy.get_param(
+                '~mercury_publish_rate',
+                default='100'
+        )))
+        while not rospy.is_shutdown():
+            if self.publisher.get_num_connections() > 0:
+                self.publisher.publish(self.message)
+            rate.sleep()
 
     def shutdown(self, reason='unknown'):
         rospy.signal_shutdown(reason)
 
     def _map_axes_value(self, value, map_item):
-        left_span = map_item['from_end'] - map_item['from_start']
-        rigth_span = map_item['to_end'] - map_item['to_start']
-        scale = float(value - map_item['from_start']) / float(left_span)
+        left_span=map_item['from_end'] - map_item['from_start']
+        rigth_span=map_item['to_end'] - map_item['to_start']
+        scale=float(value - map_item['from_start']) / float(left_span)
         return map_item['to_start'] + (scale * rigth_span)
 
     def _extract_map_axes_config(self, cfg):
-        items = []
-        start_index = 0
-        closed_paran = True
+        items=[]
+        start_index=0
+        closed_paran=True
         for i, char in enumerate(cfg):
             if char == '(':
-                start_index = i + 1
+                start_index=i + 1
                 if not closed_paran:
                     return None
-                closed_paran = False
+                closed_paran=False
             if char == ')':
-                closed_paran = True
+                closed_paran=True
                 if i < start_index:
                     return None
-                section = cfg[start_index:i]
-                parts = section.split(',')
+                section=cfg[start_index:i]
+                parts=section.split(',')
                 if len(parts) != 5:
                     return None
                 if not parts[0].isdigit():
@@ -160,21 +194,21 @@ class JoyController:
         return items
 
     def _extract_axes_to_button_config(self, cfg):
-        items = []
-        start_index = 0
-        closed_paran = True
+        items=[]
+        start_index=0
+        closed_paran=True
         for i, char in enumerate(cfg):
             if char == '(':
-                start_index = i + 1
+                start_index=i + 1
                 if not closed_paran:
                     return None
-                closed_paran = False
+                closed_paran=False
             if char == ')':
-                closed_paran = True
+                closed_paran=True
                 if i < start_index:
                     return None
-                section = cfg[start_index:i]
-                parts = section.split(',')
+                section=cfg[start_index:i]
+                parts=section.split(',')
                 if len(parts) != 4:
                     return None
                 if not parts[0].isdigit():

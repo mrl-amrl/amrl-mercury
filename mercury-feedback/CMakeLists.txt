@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mercury_trajectory)
+project(mercury_feedback)
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
@@ -8,13 +8,17 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-add_message_files(
+add_service_files(
   FILES
-  TrajectoryData.msg
+    SetEnabled.srv
 )
 
-generate_dynamic_reconfigure_options(
-  cfg/Trajectory.cfg
+add_message_files(
+  FILES
+    EposError.msg
+    ManipulatorStatus.msg
+    MovementFeedback.msg
+    RobotsFeedback.msg
 )
 
 generate_messages(

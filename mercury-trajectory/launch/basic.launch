@@ -1,6 +1,8 @@
 <launch>
     <arg name="joy_device" default="/dev/input/js0"/>
     <arg name="repeat_rate" default="0.0"/>
+    <arg name="joy_config" default="$(find mercury_trajectory)/config/joy.yaml"/>
+    <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
 
     <node pkg="joy" type="joy_node" name="ros_joy">
         <param name="dev" value="$(arg joy_device)"/>
@@ -9,4 +11,6 @@
 
     <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy"/>    
     <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>    
+    <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
+    <node name="dynamic_reconfigure_load_joy" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_joy $(arg joy_config)" />
 </launch>

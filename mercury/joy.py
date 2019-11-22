@@ -20,13 +20,13 @@ class Joy:
         if len(self._callbacks['buttons']) != 0:
             for button in buttons:
                 if button in self._callbacks['buttons']:
-                    self._callbacks['buttons'][button](self._args['buttons'][button])
+                    self._callbacks['buttons'][button](*self._args['buttons'][button])
 
         axes = data.axes_names
         if len(self._callbacks['axes']) != 0:
             for idx, name in enumerate(axes):
                 if name in self._callbacks['axes']:
-                    self._callbacks['axes'][name](data.axes_values[idx], self._args['axes'][name])
+                    self._callbacks['axes'][name](data.axes_values[idx], *self._args['axes'][name])
     
     def on_pressed(self, button_name, callback, *args):
         self._callbacks['buttons'][button_name] = callback

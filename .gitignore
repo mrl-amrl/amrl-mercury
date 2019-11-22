@@ -104,3 +104,6 @@ venv.bak/
 .mypy_cache/
 
 .vscode
+node_modules
+mercury-gui
+backup

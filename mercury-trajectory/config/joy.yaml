@@ -1,0 +1,27 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  axes_names: left_x_axes, left_y_axes, lt_axes, right_x_axes, right_y_axes, rt_axes
+  axes_threshold: 0.1
+  axes_to_button: (6,less-than,-0.5,arrow_right)(6,greater-than,0.5,arrow_left)(7,less-than,-0.5,arrow_down)(7,greater-than,0.5,arrow_up)(0,greater-than,0.5,speed_down)(0,less-than,-0.5,speed_up)(5,greater-than,0.5,rt_button)(2,greater-than,0.5,lt_button)(1,greater-than,0.5,both_flipper_up)(1,less-than,-0.5,both_flipper_down)
+  button_names: a_button, b_button, x_button, y_button, lb_button, rb_button, back_button,
+    start_button, home_button, left_axes_button, right_axes_button
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      axes_names: left_x_axes, left_y_axes, lt_axes, right_x_axes, right_y_axes, rt_axes
+      axes_threshold: 0.1
+      axes_to_button: (6,less-than,-0.5,arrow_right)(6,greater-than,0.5,arrow_left)(7,less-than,-0.5,arrow_down)(7,greater-than,0.5,arrow_up)(0,greater-than,0.5,speed_down)(0,less-than,-0.5,speed_up)(5,greater-than,0.5,rt_button)(2,greater-than,0.5,lt_button)(1,greater-than,0.5,both_flipper_up)(1,less-than,-0.5,both_flipper_down)
+      button_names: a_button, b_button, x_button, y_button, lb_button, rb_button,
+        back_button, start_button, home_button, left_axes_button, right_axes_button
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      map_axes: (5,-1.0,1.0,1.0,0.0)(2,-1.0,1.0,1.0,0.0)
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+  map_axes: (5,-1.0,1.0,1.0,0.0)(2,-1.0,1.0,1.0,0.0)
+state: []

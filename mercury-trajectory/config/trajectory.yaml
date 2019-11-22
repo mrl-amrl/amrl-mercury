@@ -1,0 +1,43 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  angular_axes: right_x_axes
+  axes_threshold: 0.5
+  btn_both_flipper_down: both_flipper_down
+  btn_both_flipper_up: both_flipper_up
+  btn_front_flipper_down: rb_button
+  btn_front_flipper_up: rt_button
+  btn_rear_flipper_down: lb_button
+  btn_rear_flipper_up: lt_button
+  btn_speed_decr: speed_down
+  btn_speed_ecnr: speed_up
+  btn_turn_left: arrow_left
+  btn_turn_right: arrow_right
+  curve_movement: false
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      angular_axes: right_x_axes
+      axes_threshold: 0.5
+      btn_both_flipper_down: both_flipper_down
+      btn_both_flipper_up: both_flipper_up
+      btn_front_flipper_down: rb_button
+      btn_front_flipper_up: rt_button
+      btn_rear_flipper_down: lb_button
+      btn_rear_flipper_up: lt_button
+      btn_speed_decr: speed_down
+      btn_speed_ecnr: speed_up
+      btn_turn_left: arrow_left
+      btn_turn_right: arrow_right
+      curve_movement: false
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      linear_axes: right_y_axes
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+  linear_axes: right_y_axes
+state: []
