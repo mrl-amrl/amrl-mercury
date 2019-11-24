@@ -265,8 +265,7 @@ class MRLRobotFeedBack:
         r = rospy.Rate(40)
         while not rospy.is_shutdown():
             if self.main_board:
-                data_decimal = self.feedback_protocol.deserilise_main_board_data()
-                rospy.logwarn("{} {}".format(data_decimal[26], data_decimal[27]))
+                self.feedback_protocol.deserilise_main_board_data()
             if self.sensor_board:
                 self.feedback_protocol.deserilise_sensor_board_data()
             self.movement_publisher()

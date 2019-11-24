@@ -30,7 +30,14 @@ class TrajectoryController:
 
         self.is_armed = False
 
-        rospy.Service("/mercury/trajectory/arm_enable", SetEnabled, self._serive_callback)
+        rospy.Service("/mercury/trajectory/arm_enable",
+                      SetEnabled, self._serive_callback)
+        rospy.Service("/mercury/power/front_led",
+                      SetEnabled, self._service_power_fled_handler)
+        rospy.Service("/mercury/power/arm_led",
+                      SetEnabled, self._service_power_aled_handler)
+        rospy.Service("/mercury/power/laser",
+                      SetEnabled, self._service_power_laser_handler)
 
         self.joy = Joy()
         # connect to dynamic reconfigure server.
@@ -48,6 +55,15 @@ class TrajectoryController:
 
         self.power_connection.send(led_state=0, emg_stop=0)
         self.commands = self.new_message()
+
+    def _service_power_laser_handler(self, data):
+        return data.enabled
+
+    def _service_power_fled_handler(self, data):
+        return data.enabled
+
+    def _service_power_aled_handler(self, data):
+        return data.enabled
 
     def _serive_callback(self, data):
         self.is_armed = data.enabled

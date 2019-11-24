@@ -17,6 +17,13 @@
     <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
     <node name="dynamic_reconfigure_load_joy" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_joy $(arg joy_config)" />
     
+    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
+        <param name="reciver_main_board_port" type="int" value="3031"/>
+        <param name="reciver_sensor_board_port" type="int" value="3040"/>
+        <param name="queue_size" type="int" value="10"/>
+        <remap from="/feedback/co2" to="/mercury/gui/co2"/>
+    </node>
+
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     <node if="$(arg display_gui)" pkg="mercury_gui" type="electron" name="mercury_gui" args="index.js" cwd="node"/>
     <node pkg="mercury_gui" type="imu.py" name="mercury_gui_imu"/>

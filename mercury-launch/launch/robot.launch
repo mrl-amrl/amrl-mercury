@@ -6,13 +6,6 @@
         <arg name="respawn" value="true"/>        
     </include>
 
-    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
-        <param name="reciver_main_board_port" type="int" value="3031"/>
-        <param name="reciver_sensor_board_port" type="int" value="3040"/>
-        <param name="queue_size" type="int" value="10"/>
-        <remap from="/feedback/co2" to="/mercury/gui/co2"/>
-    </node>
-
     <node pkg="mercury_usb" type="usb-node.py" name="mercury_usb" respawn="true" respawn_delay="1">
         <param name="devices" value="$(arg xsense_device)"/>
     </node>
