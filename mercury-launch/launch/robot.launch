@@ -1,12 +1,26 @@
 <launch>
     <arg name="xsense_device" default="/dev/xsense"/>
+    <arg name="laser_device" default="/dev/hokuyo_H0902975"/>
+    <arg name="xtion_device" default="/dev/xtion"/>
+    <arg name="webcam_device" default="/dev/webcam"/>
 
     <include file="$(find mercury_launch)/launch/xsens_driver.launch">
         <arg name="device" value="$(arg xsense_device)"/>
-        <arg name="respawn" value="true"/>        
+        <arg name="respawn" value="true"/>
     </include>
 
     <node pkg="mercury_usb" type="usb-node.py" name="mercury_usb" respawn="true" respawn_delay="1">
-        <param name="devices" value="$(arg xsense_device)"/>
+        <param name="devices" value="$(arg xsense_device),$(arg webcam_device),$(arg xtion_device),$(arg laser_device)"/>
     </node>
+
+    <include file="$(find openni2_launch)/launch/openni2.launch">
+    </include>
+
+    <include file="$(find mercury_launch)/launch/webcam.launch">
+        <arg name="webcam_device" value="$(arg webcam_device)"/>
+    </include>
+
+    <include file="$(find mercury_launch)/launch/laser.launch">
+        <arg name="laser_port" value="$(arg laser_device)"/>
+    </include>
 </launch>

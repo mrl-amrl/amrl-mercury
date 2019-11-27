@@ -4,6 +4,7 @@
     <arg name="joy_config" default="$(find mercury_trajectory)/config/joy.yaml"/>
     <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
     <arg name="display_gui" default="true"/>
+    <arg name="image_topic" default="/camera/rgb/image_raw"/>
 
     <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
         <param name="dev" value="$(arg joy_device)"/>
@@ -27,4 +28,10 @@
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     <node if="$(arg display_gui)" pkg="mercury_gui" type="electron" name="mercury_gui" args="index.js" cwd="node"/>
     <node pkg="mercury_gui" type="imu.py" name="mercury_gui_imu"/>
+
+    <node name="qrcode_detection" type="qrcode_reader_node" pkg="amrl_qrcode_detection" output="screen" >
+        <remap from="image" to="$(arg image_topic)"/>
+    </node>
+
+    <node name="web_video_server" type="web_video_server" pkg="web_video_server" respawn="true" respawn_delay="1"/>    
 </launch>

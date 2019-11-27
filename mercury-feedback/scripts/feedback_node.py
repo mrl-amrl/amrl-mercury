@@ -2,19 +2,23 @@
 from __future__ import division
 import rospy
 import socket
-import sys
+import time
+import ping
+from timeout import timeout
 from std_msgs.msg import UInt8
 from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
 
-
 node_name = 'robot_feedback'
+
 
 class MRLRobotFeedBack:
     def __init__(self):
         main_port, sensor_port, queue_size = self.get_params()
         self.feedback_protocol = FeedBackProtocol(main_port, sensor_port)
+        self.ping_sub = rospy.Publisher(
+            '/feedback/ping', Int16, queue_size=queue_size)
         self.movement_pub = rospy.Publisher(
             '/feedback/movement', MovementFeedback, queue_size=queue_size)
         self.manipulator_pub = rospy.Publisher(
@@ -29,7 +33,8 @@ class MRLRobotFeedBack:
         self.sensor_board = rospy.get_param('sensor_board_available', False)
 
     def sensor_board_feedback(self):
-        self.feedback_co2.publish(self.feedback_protocol.sensor_board.co2_gas)
+        if self.feedback_co2.get_num_connections() > 0:
+            self.feedback_co2.publish(self.feedback_protocol.sensor_board.co2_gas)
 
     def movement_publisher(self):
         movement_msg = MovementFeedback()
@@ -39,6 +44,8 @@ class MRLRobotFeedBack:
         movement_msg.position.append(
             self.feedback_protocol.epos_position.rear_arm
         )
+        if self.movement_pub.get_num_connections() > 0:
+            self.movement_pub.publish(movement_msg)
 
     def manipulator_publisher(self):
         manipulator_status_msg = ManipulatorStatus()
@@ -58,15 +65,15 @@ class MRLRobotFeedBack:
         manipulator_status_msg.name.append('joint4')
         manipulator_status_msg.position.append(
             self.feedback_protocol.sensor_board.position_joint4)
-
-        self.manipulator_pub.publish(manipulator_status_msg)
+        if self.manipulator_pub.get_num_connections() > 0:
+            self.manipulator_pub.publish(manipulator_status_msg)
 
     def epos_error_publisher(self):
         epos_error_msg = EposError()
         epos_error_msg.name.extend(['traction right error',
-                                     'traction left error', 'front arm error',
-                                     'rear arm error', 'manipulator joint 1 error',
-                                     'manipulator joint 2 error', 'manipulator joint 3 error'])
+                                    'traction left error', 'front arm error',
+                                    'rear arm error', 'manipulator joint 1 error',
+                                    'manipulator joint 2 error', 'manipulator joint 3 error'])
         fault = []
         fault.append(self.feedback_protocol.epos_fault.traction_right)
         fault.append(self.feedback_protocol.epos_fault.traction_left)
@@ -77,7 +84,8 @@ class MRLRobotFeedBack:
         fault.append(self.feedback_protocol.epos_fault.manip_joint3)
         epos_error_msg.error.extend(fault)
         epos_error_msg.error_description.extend(map(self.error_parser, fault))
-        self.epos_error_pub.publish(epos_error_msg)
+        if self.epos_error_pub.get_num_connections() > 0:
+            self.epos_error_pub.publish(epos_error_msg)
 
     def robot_feedback_publisher(self):
         robot_feedback_msg = RobotsFeedback()
@@ -98,8 +106,10 @@ class MRLRobotFeedBack:
         self.robot_feedback_pub.publish(robot_feedback_msg)
 
     def get_params(self):
-        reciver_main_board_port = rospy.get_param('~reciver_main_board_port', 3031)
-        reciver_sensor_board_port = rospy.get_param('~reciver_sensor_board_port', 3033)
+        reciver_main_board_port = rospy.get_param(
+            '~reciver_main_board_port', 3031)
+        reciver_sensor_board_port = rospy.get_param(
+            '~reciver_sensor_board_port', 3033)
         queue_size = int(rospy.get_param('~queue_size', 10))
         return reciver_main_board_port, reciver_sensor_board_port, queue_size
 
@@ -260,20 +270,33 @@ class MRLRobotFeedBack:
         elif fault == 0xFF21:
             return "Auto tuning torque invalid error"
         return "Unknown error"
-    
+
     def spin_(self):
-        r = rospy.Rate(40)
+        counter = 0
         while not rospy.is_shutdown():
+            counter += 1
+            if counter == 10:
+                counter = 0
+                time_result = ping.get_ping_time('192.168.10.170')
+                if time_result < 1:
+                    time_result = 1
+                else:
+                    time_result = int(time_result)
+                if self.ping_sub.get_num_connections() > 0:
+                    self.ping_sub.publish(time_result)
+
             if self.main_board:
-                self.feedback_protocol.deserilise_main_board_data()
+                with timeout(1):
+                    self.feedback_protocol.deserilise_main_board_data()
             if self.sensor_board:
-                self.feedback_protocol.deserilise_sensor_board_data()
+                with timeout(1):
+                    self.feedback_protocol.deserilise_sensor_board_data()
+            
             self.movement_publisher()
             self.manipulator_publisher()
             self.robot_feedback_publisher()
             self.sensor_board_feedback()
             self.epos_error_publisher()
-            r.sleep()
 
 
 if __name__ == "__main__":

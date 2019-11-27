@@ -45,7 +45,7 @@ class Battery:
 
 
 class Current:
-    def init(self):
+    def __init__(self):
         self.right_traction = 0
         self.left_traction = 0
         self.manip_joint1 = 0
