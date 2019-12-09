@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>mercury_common</name>
+  <version>0.0.1</version>
+  <description> The mercury_common messages and services</description>
+
+  <maintainer email="ami_rsh@outlook.com">Amir Sharifi</maintainer>
+
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <build_export_depend>message_generation</build_export_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <export></export>
+</package>
