@@ -8,17 +8,25 @@ class PowerManagementConnection(QObject):
         self.socket.bind(QHostAddress('192.168.10.10'), port)
         self.port = port
         self.target = QHostAddress(target)
+
+        self.epos_reset = 0
+        self.led_state = 0
+        self.emg_stop = 0
+        self.pc = 1
+        self.laser = 1
+        self.video_server = 1
     
-    def send(self,
-             led_state,
-             emg_stop
-             ):
+    def send(self):
         datagram = QByteArray()
         stream = QDataStream(datagram, QIODevice.WriteOnly)
 
-        stream.writeUInt8(led_state)
-        stream.writeUInt8(emg_stop)
-        for _ in range(14):
+        stream.writeUInt8(self.led_state)
+        stream.writeUInt8(self.emg_stop)
+        stream.writeUInt8(self.epos_reset)
+        stream.writeUInt8(self.pc)
+        stream.writeUInt8(self.laser)
+        stream.writeUInt8(self.video_server)
+        for _ in range(10):
             stream.writeUInt8(0)
         
         self.socket.writeDatagram(datagram, self.target, self.port)
@@ -78,7 +86,7 @@ if __name__ == "__main__":
     power_connection = PowerManagementConnection(target='192.168.10.170', port=3024)
     movement_connection = MovementConnection(target='192.168.10.170', port=3020)        
     
-    power_connection.send(emg_stop=0, led_state=0)
+    power_connection.send()
     for i in range(0, 100):
         movement_connection.send(
             left_velocity=i,

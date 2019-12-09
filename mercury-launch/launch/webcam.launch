@@ -1,7 +1,7 @@
 <launch>
     <arg name="webcam_device" default="/dev/webcam"/>
 
-    <!-- <node name="webcam" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" respawn_delay="1">
+    <node name="webcam" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" respawn_delay="1">
         <param name="video_device" value="$(arg webcam_device)" />
         <param name="image_width" value="640" />
         <param name="image_height" value="480" />
@@ -9,5 +9,5 @@
         <param name="camera_frame_id" value="webcam" />
         <param name="io_method" value="mmap"/>
         <param name="camera_name" value="webcam"/>
-    </node>   -->
+    </node>  
 </launch>

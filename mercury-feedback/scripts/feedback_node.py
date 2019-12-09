@@ -4,6 +4,7 @@ import rospy
 import socket
 import time
 import ping
+import threading
 from timeout import timeout
 from std_msgs.msg import UInt8
 from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
@@ -31,18 +32,20 @@ class MRLRobotFeedBack:
             '/feedback/co2', Int16, queue_size=queue_size)
         self.main_board = rospy.get_param('main_board_available', True)
         self.sensor_board = rospy.get_param('sensor_board_available', False)
+        self.exit_thread = False
 
     def sensor_board_feedback(self):
         if self.feedback_co2.get_num_connections() > 0:
-            self.feedback_co2.publish(self.feedback_protocol.sensor_board.co2_gas)
+            self.feedback_co2.publish(
+                self.feedback_protocol.sensor_board.co2_gas)
 
     def movement_publisher(self):
         movement_msg = MovementFeedback()
         movement_msg.position.append(
-            self.feedback_protocol.epos_position.front_arm
+            90 - self.feedback_protocol.epos_position.front_arm
         )
         movement_msg.position.append(
-            self.feedback_protocol.epos_position.rear_arm
+            90 - self.feedback_protocol.epos_position.rear_arm
         )
         if self.movement_pub.get_num_connections() > 0:
             self.movement_pub.publish(movement_msg)
@@ -103,7 +106,8 @@ class MRLRobotFeedBack:
         robot_feedback_msg.torque_joint0 = self.feedback_protocol.torque.manip_joint1
         robot_feedback_msg.torque_joint1 = self.feedback_protocol.torque.manip_joint2
         robot_feedback_msg.torque_joint2 = self.feedback_protocol.torque.manip_joint3
-        self.robot_feedback_pub.publish(robot_feedback_msg)
+        if self.robot_feedback_pub.get_num_connections() > 0:
+            self.robot_feedback_pub.publish(robot_feedback_msg)
 
     def get_params(self):
         reciver_main_board_port = rospy.get_param(
@@ -271,39 +275,43 @@ class MRLRobotFeedBack:
             return "Auto tuning torque invalid error"
         return "Unknown error"
 
-    def spin_(self):
-        counter = 0
-        while not rospy.is_shutdown():
-            counter += 1
-            if counter == 10:
-                counter = 0
-                time_result = ping.get_ping_time('192.168.10.170')
-                if time_result < 1:
-                    time_result = 1
-                else:
-                    time_result = int(time_result)
-                if self.ping_sub.get_num_connections() > 0:
-                    self.ping_sub.publish(time_result)
+    def calculate_ping(self):
+        rate = rospy.Rate(2)
+        while not self.exit_thread:
+            time_result = ping.get_ping_time('192.168.10.170')
+            if time_result < 1:
+                time_result = 1
+            else:
+                time_result = int(time_result)
+            if self.ping_sub.get_num_connections() > 0:
+                self.ping_sub.publish(time_result)
+            rate.sleep()
 
+    def spin(self):
+        thread = threading.Thread(target=self.calculate_ping)
+        thread.daemon = True
+        thread.start()
+
+        while not rospy.is_shutdown():
             if self.main_board:
-                with timeout(1):
-                    self.feedback_protocol.deserilise_main_board_data()
+                self.feedback_protocol.deserilise_main_board_data()
             if self.sensor_board:
-                with timeout(1):
-                    self.feedback_protocol.deserilise_sensor_board_data()
-            
+                self.feedback_protocol.deserilise_sensor_board_data()
+
             self.movement_publisher()
             self.manipulator_publisher()
             self.robot_feedback_publisher()
             self.sensor_board_feedback()
             self.epos_error_publisher()
 
+        self.exit_thread = True
+
 
 if __name__ == "__main__":
     rospy.init_node(node_name, anonymous=True)
     try:
         robot_feedback = MRLRobotFeedBack()
-        robot_feedback.spin_()
+        robot_feedback.spin()
     except KeyboardInterrupt:
         rospy.signal_shutdown('keyboard interrupt')
     except rospy.ROSException as err:

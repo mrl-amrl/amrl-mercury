@@ -82,7 +82,7 @@ class FeedBackProtocol:
         self.sensor_board = SensorBoard()
 
         self.socket_main_board = socket.socket(
-            socket.AF_INET, socket.SOCK_DGRAM)
+            socket.AF_INET, socket.SOCK_DGRAM)        
         self.socket_main_board.bind(('0.0.0.0', reciver_main_board_port))
         self.socket_sensor_board = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)
@@ -105,42 +105,28 @@ class FeedBackProtocol:
             data_decimal[10], data_decimal[11])
         self.epos_fault.manip_joint3 = byte_to_variable(
             data_decimal[12], data_decimal[13])
-        self.epos_position.front_arm = byte_to_variable(
-            data_decimal[14], data_decimal[15])
-        self.epos_position.rear_arm = byte_to_variable(
-            data_decimal[16], data_decimal[17])
+        self.epos_position.front_arm = data_decimal[14]
+        self.epos_position.rear_arm = data_decimal[15]
         self.epos_position.manip_joint1 = byte_to_variable(
-            data_decimal[18], data_decimal[19])
+            data_decimal[16], data_decimal[17])
         self.epos_position.manip_joint2 = byte_to_variable(
-            data_decimal[20], data_decimal[21])
+            data_decimal[18], data_decimal[19])
         self.epos_position.manip_joint3 = byte_to_variable(
-            data_decimal[22], data_decimal[23])
-        self.epos_position.reserve = byte_to_variable(
-            data_decimal[24], data_decimal[25])
-        self.battery.power_battery = data_decimal[26]
-        self.battery.signal_battery = data_decimal[27]
+            data_decimal[20], data_decimal[21])
+
+        self.battery.power_battery = data_decimal[24]
+        self.battery.signal_battery = data_decimal[25]
 
         self.current.right_traction = byte_to_variable(
-            data_decimal[28], data_decimal[29])
+            data_decimal[26], data_decimal[27])
         self.current.left_traction = byte_to_variable(
-            data_decimal[30], data_decimal[31])
+            data_decimal[28], data_decimal[29])
         self.current.manip_joint1 = byte_to_variable(
-            data_decimal[32], data_decimal[33])
+            data_decimal[30], data_decimal[31])
         self.current.manip_joint2 = byte_to_variable(
-            data_decimal[34], data_decimal[35])
+            data_decimal[32], data_decimal[33])
         self.current.manip_joint3 = byte_to_variable(
-            data_decimal[36], data_decimal[37])
-
-        self.torque.right_traction = byte_to_variable(
-            data_decimal[38], data_decimal[39])
-        self.torque.left_traction = byte_to_variable(
-            data_decimal[40], data_decimal[41])
-        self.torque.manip_joint1 = byte_to_variable(
-            data_decimal[42], data_decimal[43])
-        self.torque.manip_joint2 = byte_to_variable(
-            data_decimal[44], data_decimal[45])
-        self.torque.manip_joint3 = byte_to_variable(
-            data_decimal[46], data_decimal[47])
+            data_decimal[34], data_decimal[35])
         return data_decimal
 
     def deserilise_sensor_board_data(self):

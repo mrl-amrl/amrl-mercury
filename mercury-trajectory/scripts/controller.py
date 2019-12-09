@@ -4,7 +4,7 @@ from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from socket_connection import MovementConnection, PowerManagementConnection
 from mercury_trajectory.cfg import TrajectoryConfig
 from mercury_trajectory.msg import TrajectoryData
-from mercury_trajectory.srv import SetEnabled
+from mercury_common.srv import SetEnabled
 from mercury import Joy
 
 
@@ -38,6 +38,10 @@ class TrajectoryController:
                       SetEnabled, self._service_power_aled_handler)
         rospy.Service("/mercury/power/laser",
                       SetEnabled, self._service_power_laser_handler)
+        rospy.Service("/mercury/power/pc",
+                      SetEnabled, self._service_power_pc_handler)
+        rospy.Service("/mercury/power/video_server",
+                      SetEnabled, self._service_power_video_server_handler)
 
         self.joy = Joy()
         # connect to dynamic reconfigure server.
@@ -53,21 +57,44 @@ class TrajectoryController:
         self.publisher = rospy.Publisher(
             '/mercury/trajectory_raw', TrajectoryData, queue_size=10)
 
-        self.power_connection.send(led_state=0, emg_stop=0)
+        self.power_connection.led_state = 0
+        self.power_connection.emg_stop = 0        
+        self.power_connection.send()
         self.commands = self.new_message()
 
+    def _service_power_video_server_handler(self, data):
+        self.power_connection.video_server = data.enabled
+        rospy.logwarn("[mercury-trajectory] sevice called for 'video server' with {}, sending ...".format(data.enabled))
+        self.power_connection.send()
+        return data.enabled
+    
+    def _service_power_pc_handler(self, data):
+        self.power_connection.pc = data.enabled
+        rospy.logwarn("[mercury-trajectory] sevice called for 'pc' with {}, sending ...".format(data.enabled))
+        self.power_connection.send()
+        return data.enabled
+    
     def _service_power_laser_handler(self, data):
+        self.power_connection.laser = data.enabled
+        rospy.logwarn("[mercury-trajectory] sevice called for 'laser' with {}, sending ...".format(data.enabled))
+        self.power_connection.send()
         return data.enabled
 
     def _service_power_fled_handler(self, data):
+        self.power_connection.led_state = data.enabled
+        rospy.logwarn("[mercury-trajectory] sevice called for 'fled' with {}, sending ...".format(data.enabled))
+        self.power_connection.send()
         return data.enabled
 
     def _service_power_aled_handler(self, data):
+        rospy.logwarn("[mercury-trajectory] sevice called for 'aled' with {}, sending ...".format(data.enabled))
         return data.enabled
 
-    def _serive_callback(self, data):
+    def _serive_callback(self, data):        
         self.is_armed = data.enabled
-        self.power_connection.send(led_state=0, emg_stop=1 if self.is_armed else 0)
+        self.power_connection.emg_stop = 0 if self.is_armed else 1
+        rospy.logwarn("[mercury-trajectory] sevice called for 'emg' with {}, sending ...".format(data.enabled))
+        self.power_connection.send()
         return data.enabled
 
     def axes_change(self, value, name):
@@ -78,11 +105,11 @@ class TrajectoryController:
 
     def button_change(self, name):
         if name == 'btn_both_flipper_up':
-            self.commands['arm_front_direction'] = 1
-            self.commands['arm_rear_direction'] = 1
-        elif name == 'btn_both_flipper_down':
             self.commands['arm_front_direction'] = 2
             self.commands['arm_rear_direction'] = 2
+        elif name == 'btn_both_flipper_down':
+            self.commands['arm_front_direction'] = 1
+            self.commands['arm_rear_direction'] = 1
         else:
             if name == 'btn_front_flipper_up':
                 self.commands['arm_front_direction'] = 1
@@ -104,9 +131,9 @@ class TrajectoryController:
                 self.max_speed = 0
 
         if name == 'btn_turn_right':
-            self.commands['angular'] = 1
-        elif name == 'btn_turn_left':
             self.commands['angular'] = -1
+        elif name == 'btn_turn_left':
+            self.commands['angular'] = 1
 
     def send(self):    
         left_velocity = self.commands['linear'] * \
@@ -204,6 +231,16 @@ class TrajectoryController:
             self.key_items['btn_speed_decr'],
             self.button_change,
             'btn_speed_decr'
+        )        
+        self.joy.on_pressed(
+            self.key_items['btn_turn_left'],
+            self.button_change,
+            'btn_turn_left'
+        )
+        self.joy.on_pressed(
+            self.key_items['btn_turn_right'],
+            self.button_change,
+            'btn_turn_right'
         )
         if self.curve_movement:
             self.joy.on_changed(
@@ -211,21 +248,10 @@ class TrajectoryController:
                 self.axes_change,
                 'angular_axes'
             )
-        else:
-            self.joy.on_pressed(
-                self.key_items['btn_turn_left'],
-                self.button_change,
-                'btn_turn_left'
-            )
-            self.joy.on_pressed(
-                self.key_items['btn_turn_right'],
-                self.button_change,
-                'btn_turn_right'
-            )
         return config
 
     def spin(self):
-        rate = rospy.Rate(100)
+        rate = rospy.Rate(30)
         while not rospy.is_shutdown():
             self.send()
             self.commands = self.new_message()

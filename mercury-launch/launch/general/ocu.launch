@@ -12,15 +12,17 @@
     </node>
 
     <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
-        <param name="mercury_publish_rate" value="30"/>
+        <param name="mercury_publish_rate" value="100"/>
     </node>
     <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>
     <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
     <node name="dynamic_reconfigure_load_joy" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_joy $(arg joy_config)" />
-    
+
     <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
         <param name="reciver_main_board_port" type="int" value="3031"/>
         <param name="reciver_sensor_board_port" type="int" value="3040"/>
+        <param name="main_board_available" type="bool" value="true"/>
+        <param name="sensor_board_available" type="bool" value="true"/>
         <param name="queue_size" type="int" value="10"/>
         <remap from="/feedback/co2" to="/mercury/gui/co2"/>
     </node>
@@ -29,9 +31,27 @@
     <node if="$(arg display_gui)" pkg="mercury_gui" type="electron" name="mercury_gui" args="index.js" cwd="node"/>
     <node pkg="mercury_gui" type="imu.py" name="mercury_gui_imu"/>
 
-    <node name="qrcode_detection" type="qrcode_reader_node" pkg="amrl_qrcode_detection" output="screen" >
+    <node name="qrcode_detection" type="qrcode_reader_node" pkg="amrl_qrcode_detection" output="screen" respawn="true">
         <remap from="image" to="$(arg image_topic)"/>
     </node>
 
-    <node name="web_video_server" type="web_video_server" pkg="web_video_server" respawn="true" respawn_delay="1"/>    
+    <node pkg="amrl_motion_detection" type="motion_detection_node" name="motion_detection" output="screen" respawn="true">
+        <param name="image_topic" value="$(arg image_topic)"/>
+    </node>
+    
+    <node pkg="amrl_vision_display" type="display-node.py" name="amrl_vision_display" output="screen" respawn="true">
+        <param name="image_topic" value="$(arg image_topic)"/>
+    </node>
+
+    <node name="usb_video_server" type="web_video_server" pkg="web_video_server" respawn="true" respawn_delay="1">    
+        <param name="server_threads" value="2"/>
+        <param name="ros_threads" value="4"/>
+        <param name="port" value="8082"/>
+    </node>
+
+    <node name="analog_video_server" type="web_video_server" pkg="web_video_server" respawn="true" respawn_delay="1">    
+        <param name="server_threads" value="2"/>
+        <param name="ros_threads" value="4"/>
+        <param name="port" value="8081"/>
+    </node>
 </launch>
