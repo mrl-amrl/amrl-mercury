@@ -1,6 +1,6 @@
 <launch>
     <arg name="joy_device" default="/dev/input/js0"/>
-    <arg name="repeat_rate" default="1.0"/>
+    <arg name="repeat_rate" default="100"/>
 
     <node pkg="joy" type="joy_node" name="ros_joy">
         <param name="dev" value="$(arg joy_device)"/>
@@ -8,5 +8,6 @@
     </node>
 
     <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
+        <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>
     </node>
 </launch>

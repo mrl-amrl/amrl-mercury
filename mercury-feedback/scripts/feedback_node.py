@@ -8,6 +8,7 @@ import threading
 from timeout import timeout
 from std_msgs.msg import UInt8
 from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
+from mercury_common.srv import SetEnabled
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
 
@@ -30,6 +31,10 @@ class MRLRobotFeedBack:
             '/feedback/robot', RobotsFeedback, queue_size=queue_size)
         self.feedback_co2 = rospy.Publisher(
             '/feedback/co2', Int16, queue_size=queue_size)
+        
+        self.flipper_front_offset = 0
+        self.flipper_rear_offset = 0
+        rospy.Service('/feedback/reset_flipper', SetEnabled, self.reset_flipper_handler)
         self.main_board = rospy.get_param('main_board_available', True)
         self.sensor_board = rospy.get_param('sensor_board_available', False)
         self.exit_thread = False
@@ -39,14 +44,22 @@ class MRLRobotFeedBack:
             self.feedback_co2.publish(
                 self.feedback_protocol.sensor_board.co2_gas)
 
+    def reset_flipper_handler(self, data):
+        if data.enabled:
+            self.flipper_front_offset = self.feedback_protocol.epos_position.front_arm - 90
+            self.flipper_rear_offset = self.feedback_protocol.epos_position.rear_arm - 90
+        return True
+
     def movement_publisher(self):
+        front = self.feedback_protocol.epos_position.front_arm - 90
+        rear = self.feedback_protocol.epos_position.rear_arm - 90
+
+        front -= self.flipper_front_offset
+        rear -= self.flipper_rear_offset
+
         movement_msg = MovementFeedback()
-        movement_msg.position.append(
-            90 - self.feedback_protocol.epos_position.front_arm
-        )
-        movement_msg.position.append(
-            90 - self.feedback_protocol.epos_position.rear_arm
-        )
+        movement_msg.position.append(front)
+        movement_msg.position.append(rear)
         if self.movement_pub.get_num_connections() > 0:
             self.movement_pub.publish(movement_msg)
 
@@ -286,7 +299,12 @@ class MRLRobotFeedBack:
             if self.ping_sub.get_num_connections() > 0:
                 self.ping_sub.publish(time_result)
             rate.sleep()
-
+        
+    def shutdown(self):
+        self.exit_thread = True
+        self.feedback_protocol.socket_main_board.close()
+        self.feedback_protocol.socket_sensor_board.close()
+    
     def spin(self):
         thread = threading.Thread(target=self.calculate_ping)
         thread.daemon = True
@@ -304,14 +322,12 @@ class MRLRobotFeedBack:
             self.sensor_board_feedback()
             self.epos_error_publisher()
 
-        self.exit_thread = True
-
-
 if __name__ == "__main__":
     rospy.init_node(node_name, anonymous=True)
     try:
         robot_feedback = MRLRobotFeedBack()
         robot_feedback.spin()
+        rospy.on_shutdown(robot_feedback.shutdown)
     except KeyboardInterrupt:
         rospy.signal_shutdown('keyboard interrupt')
     except rospy.ROSException as err:

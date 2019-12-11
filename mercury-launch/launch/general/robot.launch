@@ -20,6 +20,11 @@
         <arg name="webcam_device" value="$(arg webcam_device)"/>
     </include> -->
 
+    <node pkg="laser_stablizer" type="stablizer_node.py" name="stablizer_node" output="screen">
+        <param name="dynamixel_ip" value="192.168.10.170"/>
+        <param name="dynamixel_port" value="3028"/>
+    </node>
+
     <include file="$(find mercury_launch)/launch/laser.launch">
         <arg name="laser_port" value="$(arg laser_device)"/>
     </include>
@@ -30,15 +35,15 @@
 
     <group ns="optris">
         <node name="optris_imager_node" pkg="optris_drivers" type="optris_imager_node" output="screen">
-            <param name="xmlConfig"      type="string" value="/usr/share/libirimager/cali/Cali-14020049.xml"/>
+            <param name="xmlConfig" type="string" value="/usr/share/libirimager/cali/Cali-14020049.xml"/>
         </node>
 
         <node name="optris_colorconvert_node" pkg="optris_drivers" type="optris_colorconvert_node">
-            <param name="palette"        type="int"    value="6"/>
-            <param name="paletteScaling" type="int"    value="1"/>
+            <param name="palette" type="int" value="6"/>
+            <param name="paletteScaling" type="int" value="1"/>
             <param name="temperatureMin" type="double" value="22"/>
             <param name="temperatureMax" type="double" value="50"/>
-            <param name="looprate"       type="double" value="30"/>
+            <param name="looprate" type="double" value="30"/>
         </node>
     </group>
 </launch>

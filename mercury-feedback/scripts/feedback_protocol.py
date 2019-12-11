@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import socket
-
+from mercury import logger
 
 def low_high_byte(integer):
     low_byte = integer & 0xFF
@@ -89,7 +89,12 @@ class FeedBackProtocol:
         self.socket_sensor_board.bind(('0.0.0.0', reciver_sensor_board_port))
 
     def deserilise_main_board_data(self):
-        data, _ = self.socket_main_board.recvfrom(1024)
+        try:
+            data, _ = self.socket_main_board.recvfrom(1024)
+        except socket.error as err:
+            logger.log_warn(err)
+            return
+            
         data_decimal = map(ord, data)        
         self.epos_fault.traction_right = byte_to_variable(
             data_decimal[0], data_decimal[1])
@@ -130,7 +135,12 @@ class FeedBackProtocol:
         return data_decimal
 
     def deserilise_sensor_board_data(self):
-        data, _ = self.socket_sensor_board.recvfrom(1024)
+        try:
+            data, _ = self.socket_sensor_board.recvfrom(1024)
+        except socket.error as err:
+            logger.log_warn(err)
+            return
+            
         data_decimal = map(ord, data)
         self.sensor_board.overCurrent_joint4 = data_decimal[0]
         self.sensor_board.overCurrent_joint5 = data_decimal[1]

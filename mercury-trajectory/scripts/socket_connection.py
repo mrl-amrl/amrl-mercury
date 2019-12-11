@@ -1,35 +1,7 @@
+from mercury import logger
+
 from PySide2.QtNetwork import QUdpSocket, QHostAddress
 from PySide2.QtCore import QByteArray, QDataStream, QIODevice, QObject
-
-class PowerManagementConnection(QObject):
-    def __init__(self, target, port=3024):
-        super(PowerManagementConnection, self).__init__(None)
-        self.socket = QUdpSocket(self)
-        self.socket.bind(QHostAddress('192.168.10.10'), port)
-        self.port = port
-        self.target = QHostAddress(target)
-
-        self.epos_reset = 0
-        self.led_state = 0
-        self.emg_stop = 0
-        self.pc = 1
-        self.laser = 1
-        self.video_server = 1
-    
-    def send(self):
-        datagram = QByteArray()
-        stream = QDataStream(datagram, QIODevice.WriteOnly)
-
-        stream.writeUInt8(self.led_state)
-        stream.writeUInt8(self.emg_stop)
-        stream.writeUInt8(self.epos_reset)
-        stream.writeUInt8(self.pc)
-        stream.writeUInt8(self.laser)
-        stream.writeUInt8(self.video_server)
-        for _ in range(10):
-            stream.writeUInt8(0)
-        
-        self.socket.writeDatagram(datagram, self.target, self.port)
 
 class MovementConnection(QObject):
     def __init__(self, target, port=3020):
@@ -45,6 +17,7 @@ class MovementConnection(QObject):
              arm_front_direction=0,
              arm_rear_direction=0,
              ):
+        logger.log_error("sending data {} {}".format(left_velocity, right_velocity))
         datagram = QByteArray()
         stream = QDataStream(datagram, QIODevice.WriteOnly)
 
@@ -79,28 +52,3 @@ class MovementConnection(QObject):
         stream.writeUInt8(arm_rear_direction)
         stream.writeUInt8(0xFF)
         self.socket.writeDatagram(datagram, self.target, self.port)
-
-
-if __name__ == "__main__":
-    import time
-    power_connection = PowerManagementConnection(target='192.168.10.170', port=3024)
-    movement_connection = MovementConnection(target='192.168.10.170', port=3020)        
-    
-    power_connection.send()
-    for i in range(0, 100):
-        movement_connection.send(
-            left_velocity=i,
-            right_velocity=i,            
-            arm_front_direction=0,
-            arm_rear_direction=0,
-        )
-        time.sleep(0.05)
-    for i in range(100, 0, -1):
-        movement_connection.send(
-            left_velocity=i,
-            right_velocity=i,            
-            arm_front_direction=0,
-            arm_rear_direction=0,
-        )
-        time.sleep(0.05)
-    

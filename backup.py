@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import pathspec
 from zipfile import ZipFile
@@ -15,7 +16,7 @@ lines.remove('mercury-gui\n')
 
 spec = pathspec.PathSpec.from_lines('gitwildmatch', lines)
 
-zip_file = ZipFile('./backup/{}.zip'.format(int(time.time())), 'w')
+zip_file = ZipFile(os.path.join(sys.argv[1], 'backup/{}.zip'.format(int(time.time()))), 'w')
 
 for dirpath, dnames, fnames in os.walk("./"):
     for f in fnames:

@@ -5,4 +5,4 @@ except ImportError:
 
 from .joy import Joy
 from .native_joy import NativeJoy
-
+from .power import PowerController
