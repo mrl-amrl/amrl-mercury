@@ -2,6 +2,7 @@
 
 import rospy
 from os import path
+from mercury import logger
 from mercury_usb.msg import Devices
 
 if __name__ == "__main__":
@@ -9,6 +10,8 @@ if __name__ == "__main__":
 
     publisher = rospy.Publisher("/mercury/usb", Devices, queue_size=1)
     devices = rospy.get_param("~devices", "").split(",")
+    logger.stack_print(True)
+    logger.log_error("checking usb devices")
 
     try:
         rate = rospy.Rate(2)

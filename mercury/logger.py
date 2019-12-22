@@ -1,4 +1,12 @@
 import rospy
+from os.path import basename
+from inspect import getframeinfo, stack
+
+_stack_print = False
+
+
+def stack_print(status):
+    _stack_print = status
 
 
 def format_message(msg):
@@ -7,6 +15,10 @@ def format_message(msg):
         name = name[1:]
     name = name.replace('/', '-')
     name = name.replace('_', '-')
+    if _stack_print:
+        caller = getframeinfo(stack()[1][0])
+        caller = "{}:{}".format(basename(caller.filename), caller.lineno)
+        return "[{}] [{}] {}".format(name, caller, msg)
     return "[{}] {}".format(name, msg)
 
 
