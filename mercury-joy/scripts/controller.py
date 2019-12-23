@@ -64,19 +64,22 @@ class JoyController:
         # validate and extract axes_to_button config
         # if result is None it means that configuration string
         # is bad.
-        axes_to_button = self._extract_axes_to_button_config(
-            str(config['axes_to_button']))
-        if not axes_to_button:
-            rospy.logerr('bad axes_to_button configuration.')
+        axes_to_button = str(config['axes_to_button'])
+        if len(axes_to_button) > 2:
+            axes_to_button = self._extract_axes_to_button_config(axes_to_button)
+            if not axes_to_button:
+                rospy.logerr('bad axes_to_button configuration.')
+            else:
+                # the structure of each item is like:
+                # {
+                #   'axes_idx': <number>,
+                #   'mode': <'less-than', 'greater-than'>,
+                #   'threshold': <number>,
+                #   'button_name': <string>
+                # }
+                self.axes_to_button = axes_to_button
         else:
-            # the structure of each item is like:
-            # {
-            #   'axes_idx': <number>,
-            #   'mode': <'less-than', 'greater-than'>,
-            #   'threshold': <number>,
-            #   'button_name': <string>
-            # }
-            self.axes_to_button = axes_to_button
+            self.axes_to_button = []
 
         # validate and extract map_axes config, like axes_to_button
         map_axes = self._extract_map_axes_config(
