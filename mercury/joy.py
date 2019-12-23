@@ -15,7 +15,7 @@ class Joy:
         self.subscriber = None
         self.auto_zero = auto_zero
         if auto_zero:
-            self.last_callback = {}
+            self.last_callback_axes = {}
         if do_register:
             self.register()
 
@@ -31,20 +31,20 @@ class Joy:
         axes = data.axes_names
         if len(self._callbacks['axes']) != 0:
             if self.auto_zero:
-                temporary_last_callbacks = self.last_callback.copy()
-                self.last_callback = {}
+                temporary_lastaxes_callbacks = self.last_callback_axes.copy()
+                self.last_callback_axes = {}                
 
             for idx, name in enumerate(axes):
                 if name in self._callbacks['axes']:
                     self._callbacks['axes'][name](
                         data.axes_values[idx], *self._args['axes'][name])
                     if self.auto_zero:
-                        self.last_callback[name] = data.axes_values[idx]
-                        if name in temporary_last_callbacks:
-                            del temporary_last_callbacks[name]
+                        self.last_callback_axes[name] = data.axes_values[idx]
+                        if name in temporary_lastaxes_callbacks:
+                            del temporary_lastaxes_callbacks[name]
 
         if self.auto_zero:
-            for name in temporary_last_callbacks:
+            for name in temporary_lastaxes_callbacks:
                 self._callbacks['axes'][name](0, *self._args['axes'][name])
 
     def on_pressed(self, button_name, callback, *args):
