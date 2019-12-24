@@ -44,9 +44,9 @@ class Joy:
                         if name in temporary_lastaxes_callbacks:
                             del temporary_lastaxes_callbacks[name]
 
-        if self.auto_zero:
-            for name in temporary_lastaxes_callbacks:
-                self._callbacks['axes'][name](0, *self._args['axes'][name])
+            if self.auto_zero:
+                for name in temporary_lastaxes_callbacks:
+                    self._callbacks['axes'][name](0, *self._args['axes'][name])
         
         for subscriber in self._subscribers.values():
             subscriber(data)
