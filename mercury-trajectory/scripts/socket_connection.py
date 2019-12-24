@@ -52,4 +52,4 @@ class MovementConnection:
         datagram.append(arm_front_direction)
         datagram.append(arm_rear_direction)
         datagram.append(0xFF)
-        self.movement_socket.sendto(bytearray, (self.target, self.port))
+        self.movement_socket.sendto(datagram, (self.target, self.port))
