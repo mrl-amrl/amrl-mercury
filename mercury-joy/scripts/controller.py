@@ -12,6 +12,7 @@ class JoyController:
         self.axes_names = []
         self.axes_to_button = []
         self.button_to_axes = []
+        self.last_button_to_axes_states = {}
         self.axes_threshold = 0.025
         self.map_axes = []
 
@@ -60,6 +61,7 @@ class JoyController:
         button_to_axes = str(config['button_to_axes'])
         self.button_to_axes = [button_name.strip()
                            for button_name in button_to_axes.split(',')]
+        self.last_button_to_axes_states = {}
 
         # validate and extract axes_to_button config
         # if result is None it means that configuration string
@@ -103,9 +105,16 @@ class JoyController:
 
         for idx, button in enumerate(data.buttons):
             if idx < len(self.button_names):
-                if self.button_names[idx] in self.button_to_axes:
-                    mercury_joy.axes_names.append(self.button_names[idx])
-                    mercury_joy.axes_values.append(button)
+                if self.button_names[idx] in self.button_to_axes:                    
+                    if idx in self.last_button_to_axes_states:
+                        last_state = self.last_button_to_axes_states[idx]
+                        if last_state != button:
+                            mercury_joy.axes_names.append(self.button_names[idx])
+                            mercury_joy.axes_values.append(button)
+                    else:
+                        self.last_button_to_axes_states[idx] = button
+                        mercury_joy.axes_names.append(self.button_names[idx])
+                        mercury_joy.axes_values.append(button)
                 elif button:
                     mercury_joy.button_names.append(self.button_names[idx])
 
