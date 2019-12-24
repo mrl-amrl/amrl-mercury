@@ -18,6 +18,7 @@ class Joy:
             self.last_callback_axes = {}
         if do_register:
             self.register()
+        self._subscribers = {}
 
     def _joy_callback(self, data):
         # TODO: mutex
@@ -46,6 +47,9 @@ class Joy:
         if self.auto_zero:
             for name in temporary_lastaxes_callbacks:
                 self._callbacks['axes'][name](0, *self._args['axes'][name])
+        
+        for subscriber in self._subscribers.values():
+            subscriber(data)
 
     def on_pressed(self, button_name, callback, *args):
         self._callbacks['buttons'][button_name] = callback
@@ -54,6 +58,9 @@ class Joy:
     def on_changed(self, axes_name, callback, *args):
         self._callbacks['axes'][axes_name] = callback
         self._args['axes'][axes_name] = args
+    
+    def subscribe(self, callback):
+        self._subscribers[id(callback)] = callback
 
     def unsubscribe(self, name):
         if name in self._callbacks['buttons']:
