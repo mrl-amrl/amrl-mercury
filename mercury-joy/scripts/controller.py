@@ -1,4 +1,5 @@
 import rospy
+from mercury import logger
 
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from mercury_joy.cfg import JoyConfig
@@ -15,6 +16,10 @@ class JoyController:
         self.last_button_to_axes_states = {}
         self.axes_threshold = 0.025
         self.map_axes = []
+        self.first_run = {
+            2: True,
+            5: True,
+        }
 
         self.axes_button_trigger = {}
 
@@ -60,7 +65,7 @@ class JoyController:
         # get axes_names from dynamic-reconfigure server
         button_to_axes = str(config['button_to_axes'])
         self.button_to_axes = [button_name.strip()
-                           for button_name in button_to_axes.split(',')]
+                               for button_name in button_to_axes.split(',')]
         self.last_button_to_axes_states = {}
 
         # validate and extract axes_to_button config
@@ -68,7 +73,8 @@ class JoyController:
         # is bad.
         axes_to_button = str(config['axes_to_button'])
         if len(axes_to_button) > 2:
-            axes_to_button = self._extract_axes_to_button_config(axes_to_button)
+            axes_to_button = self._extract_axes_to_button_config(
+                axes_to_button)
             if not axes_to_button:
                 rospy.logerr('bad axes_to_button configuration.')
             else:
@@ -103,13 +109,24 @@ class JoyController:
         mercury_joy.axes_names = []
         mercury_joy.axes_values = []
 
+        axes = list(data.axes)
+
+        for key in self.first_run:
+            if not self.first_run[key]:
+                continue
+            if axes[key] == 0.0:
+                axes[key] = 1.0
+            else:
+                self.first_run[key] = False
+
         for idx, button in enumerate(data.buttons):
             if idx < len(self.button_names):
-                if self.button_names[idx] in self.button_to_axes:                    
+                if self.button_names[idx] in self.button_to_axes:
                     if idx in self.last_button_to_axes_states:
                         last_state = self.last_button_to_axes_states[idx]
                         if last_state != button:
-                            mercury_joy.axes_names.append(self.button_names[idx])
+                            mercury_joy.axes_names.append(
+                                self.button_names[idx])
                             mercury_joy.axes_values.append(button)
                     else:
                         self.last_button_to_axes_states[idx] = button
@@ -118,7 +135,7 @@ class JoyController:
                 elif button:
                     mercury_joy.button_names.append(self.button_names[idx])
 
-        for idx, axes_value in enumerate(data.axes):
+        for idx, axes_value in enumerate(axes):
             for map_axes_item in self.map_axes:
                 if map_axes_item['axes_idx'] == idx:
                     # TODO: default value of joy when ROS-joy node started is equal to 0.0.
