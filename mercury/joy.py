@@ -15,9 +15,10 @@ class Joy:
         self.subscriber = None
         self.auto_zero = auto_zero
         if auto_zero:
-            self.last_callback = {}
+            self.last_callback_axes = {}
         if do_register:
             self.register()
+        self._subscribers = {}
 
     def _joy_callback(self, data):
         # TODO: mutex
@@ -31,21 +32,24 @@ class Joy:
         axes = data.axes_names
         if len(self._callbacks['axes']) != 0:
             if self.auto_zero:
-                temporary_last_callbacks = self.last_callback.copy()
-                self.last_callback = {}
+                temporary_lastaxes_callbacks = self.last_callback_axes.copy()
+                self.last_callback_axes = {}                
 
             for idx, name in enumerate(axes):
                 if name in self._callbacks['axes']:
                     self._callbacks['axes'][name](
                         data.axes_values[idx], *self._args['axes'][name])
                     if self.auto_zero:
-                        self.last_callback[name] = data.axes_values[idx]
-                        if name in temporary_last_callbacks:
-                            del temporary_last_callbacks[name]
+                        self.last_callback_axes[name] = data.axes_values[idx]
+                        if name in temporary_lastaxes_callbacks:
+                            del temporary_lastaxes_callbacks[name]
 
-        if self.auto_zero:
-            for name in temporary_last_callbacks:
-                self._callbacks['axes'][name](0, *self._args['axes'][name])
+            if self.auto_zero:
+                for name in temporary_lastaxes_callbacks:
+                    self._callbacks['axes'][name](0, *self._args['axes'][name])
+        
+        for subscriber in self._subscribers.values():
+            subscriber(data)
 
     def on_pressed(self, button_name, callback, *args):
         self._callbacks['buttons'][button_name] = callback
@@ -54,6 +58,9 @@ class Joy:
     def on_changed(self, axes_name, callback, *args):
         self._callbacks['axes'][axes_name] = callback
         self._args['axes'][axes_name] = args
+    
+    def subscribe(self, callback):
+        self._subscribers[id(callback)] = callback
 
     def unsubscribe(self, name):
         if name in self._callbacks['buttons']:
