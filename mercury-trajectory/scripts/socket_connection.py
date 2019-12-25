@@ -18,8 +18,6 @@ class MovementConnection:
              arm_front_direction=0,
              arm_rear_direction=0,
              ):
-        logger.log_error("sending data {} {}".format(
-            left_velocity, right_velocity))
         datagram = bytearray()
 
         if left_velocity > 100:

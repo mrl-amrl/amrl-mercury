@@ -1,0 +1,23 @@
+<launch>
+    <arg name="xsense_device" default="/dev/xsense"/>
+    <arg name="laser_device" default="/dev/hokuyo_H0902975"/>
+
+    <include file="$(find mercury_launch)/launch/xsens_driver.launch">
+        <arg name="device" value="$(arg xsense_device)"/>
+        <arg name="respawn" value="true"/>
+    </include>
+    
+    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
+        <param name="reciver_main_board_port" type="int" value="3031"/>
+        <param name="reciver_sensor_board_port" type="int" value="3040"/>
+        <param name="main_board_available" type="bool" value="true"/>
+        <param name="sensor_board_available" type="bool" value="true"/>
+        <param name="queue_size" type="int" value="10"/>
+        <remap from="/feedback/co2" to="/mercury/gui/co2"/>
+    </node>
+
+    <node pkg="laser_stablizer" type="stablizer_node.py" name="stablizer_node" output="screen">
+        <param name="dynamixel_ip" value="192.168.10.170"/>
+        <param name="dynamixel_port" value="3028"/>
+    </node>
+</launch>
