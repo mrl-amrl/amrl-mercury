@@ -4,7 +4,7 @@
     <arg name="joy_config" default="$(find mercury_trajectory)/config/joy.yaml"/>
     <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
     <arg name="display_gui" default="true"/>
-    <arg name="image_topic" default="/camera/rgb/image_raw"/>
+    <arg name="image_topic" default="/camera/rgb/image_raw"/>    
 
     <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
         <param name="dev" value="$(arg joy_device)"/>
