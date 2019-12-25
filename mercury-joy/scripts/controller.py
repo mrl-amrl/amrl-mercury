@@ -1,5 +1,4 @@
 import rospy
-from mercury import logger
 
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from mercury_joy.cfg import JoyConfig
