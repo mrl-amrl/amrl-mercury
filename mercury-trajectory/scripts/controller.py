@@ -1,10 +1,12 @@
 import rospy
+import time
 
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from socket_connection import MovementConnection
 from mercury_trajectory.cfg import TrajectoryConfig
 from mercury_trajectory.msg import TrajectoryData
 from mercury_common.srv import SetEnabled
+from mercury import logger
 from mercury import Joy, PowerController
 
 
@@ -26,6 +28,7 @@ class TrajectoryController:
             'btn_rear_flipper_down': 'btn_rear_flipper_down',
             'btn_both_flipper_up': 'btn_both_flipper_up',
             'btn_both_flipper_down': 'btn_both_flipper_down',
+            'btn_epos_reset': 'btn_epos_reset',
         }
 
         self.is_armed = False
@@ -53,8 +56,8 @@ class TrajectoryController:
         self.commands = self.new_message()
 
     def _enable_service(self, data):
-        rospy.logwarn(
-            "[{}] sevice called for 'enable' with {}".format(rospy.get_name(), data.enabled))
+        logger.log_warn(
+            "sevice called for 'enable' with {}".format(data.enabled))
         self.enable = data.enabled
         if self.enable:
             self.joy.register()
@@ -64,8 +67,8 @@ class TrajectoryController:
 
     def _serive_callback(self, data):
         self.is_armed = data.enabled
-        rospy.logwarn(
-            "[{}] sevice called for 'is_armed' with {}, sending ...".format(rospy.get_name(), data.enabled))
+        logger.log_warn(
+            "sevice called for 'is_armed' with {}, sending ...".format(data.enabled))
         # return not self.power_controller.send('emergency', not self.is_armed)
         return data.enabled
 
@@ -141,6 +144,11 @@ class TrajectoryController:
                 arm_rear_direction=self.commands['arm_rear_direction'],
             )
 
+    def epos_reset(self):
+        self.power_controller.send('epos_reset', True)
+        time.sleep(0.025)
+        self.power_controller.send('epos_reset', False)
+
     def new_message(self):
         return {
             'linear': 0,
@@ -156,57 +164,61 @@ class TrajectoryController:
             self.axes_change,
             'linear_axes'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_front_flipper_up'],
             self.button_change,
             'btn_front_flipper_up'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_front_flipper_down'],
             self.button_change,
             'btn_front_flipper_down'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_rear_flipper_up'],
             self.button_change,
             'btn_rear_flipper_up'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_rear_flipper_down'],
             self.button_change,
             'btn_rear_flipper_down'
         )
 
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_both_flipper_up'],
             self.button_change,
             'btn_both_flipper_up'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_both_flipper_down'],
             self.button_change,
             'btn_both_flipper_down'
         )
 
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_speed_ecnr'],
             self.button_change,
             'btn_speed_ecnr'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_speed_decr'],
             self.button_change,
             'btn_speed_decr'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_turn_left'],
             self.button_change,
             'btn_turn_left'
         )
-        self.joy.on_pressed(
+        self.joy.on_key_down(
             self.key_items['btn_turn_right'],
             self.button_change,
             'btn_turn_right'
+        )
+        self.joy.on_pressed(
+            self.key_items['btn_epos_reset'],
+            self.epos_reset,
         )
         if self.curve_movement:
             self.joy.on_changed(
@@ -216,8 +228,8 @@ class TrajectoryController:
             )
 
     def _configuration(self, config, level):
-        rospy.logwarn(
-            "[mercury-trajectory] new dynamic parameters has been loaded")
+        logger.log_warn(
+            "new dynamic parameters has been loaded")
         self.curve_movement = bool(config['curve_movement'])
         self.axes_threshold = float(config['axes_threshold'])
         for key in self.key_items:
