@@ -12,6 +12,7 @@ dictitems:
   btn_speed_ecnr: speed_up
   btn_turn_left: arrow_left
   btn_turn_right: arrow_right
+  btn_epos_reset: home_button
   curve_movement: false
   groups: !!python/object/new:dynamic_reconfigure.encoding.Config
     dictitems:
@@ -27,6 +28,7 @@ dictitems:
       btn_speed_ecnr: speed_up
       btn_turn_left: arrow_left
       btn_turn_right: arrow_right
+      btn_epos_reset: home_button
       curve_movement: false
       groups: !!python/object/new:dynamic_reconfigure.encoding.Config
         state: []

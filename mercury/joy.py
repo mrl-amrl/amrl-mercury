@@ -7,11 +7,14 @@ class Joy:
         self._callbacks = {
             'buttons': {},
             'axes': {},
+            'press_btns': {},
         }
         self._args = {
             'buttons': {},
             'axes': {},
+            'press_btns': {},
         }
+        self.last_button_states = []
         self.subscriber = None
         self.auto_zero = auto_zero
         if auto_zero:
@@ -23,17 +26,23 @@ class Joy:
     def _joy_callback(self, data):
         # TODO: mutex
         buttons = data.button_names
-        if len(self._callbacks['buttons']) != 0:
+        if len(self._callbacks['buttons']) + len(self._callbacks['press_btns']):
+            diff_list = list(set(buttons) - set(self.last_button_states))
             for button in buttons:
+                if button in self._callbacks['press_btns']:
+                    if button in diff_list:
+                        self._callbacks['press_btns'][button](
+                            *self._args['press_btns'][button])
                 if button in self._callbacks['buttons']:
                     self._callbacks['buttons'][button](
                         *self._args['buttons'][button])
+            self.last_button_states = buttons
 
         axes = data.axes_names
         if len(self._callbacks['axes']) != 0:
             if self.auto_zero:
                 temporary_lastaxes_callbacks = self.last_callback_axes.copy()
-                self.last_callback_axes = {}                
+                self.last_callback_axes = {}
 
             for idx, name in enumerate(axes):
                 if name in self._callbacks['axes']:
@@ -47,58 +56,48 @@ class Joy:
             if self.auto_zero:
                 for name in temporary_lastaxes_callbacks:
                     self._callbacks['axes'][name](0, *self._args['axes'][name])
-        
+
         for subscriber in self._subscribers.values():
             subscriber(data)
 
     def on_pressed(self, button_name, callback, *args):
+        self._callbacks['press_btns'][button_name] = callback
+        self._args['press_btns'][button_name] = args
+
+    def on_key_down(self, button_name, callback, *args):
         self._callbacks['buttons'][button_name] = callback
         self._args['buttons'][button_name] = args
 
     def on_changed(self, axes_name, callback, *args):
         self._callbacks['axes'][axes_name] = callback
         self._args['axes'][axes_name] = args
-    
+
     def subscribe(self, callback):
         self._subscribers[id(callback)] = callback
 
     def unsubscribe(self, name):
-        if name in self._callbacks['buttons']:
-            del self._callbacks['buttons'][name]
-        if name in self._callbacks['axes']:
-            del self._callbacks['axes'][name]
-
-        if name in self._args['buttons']:
-            del self._args['buttons'][name]
-        if name in self._args['axes']:
-            del self._args['axes'][name]
+        for key in self._callbacks:
+            if name in self._callbacks[key]:
+                del self._callbacks[key][name]
+                del self._args[key][name]
 
     def unsubscribe_all(self):
-        self._callbacks = {
-            'buttons': {},
-            'axes': {},
-        }
-        self._args = {
-            'buttons': {},
-            'axes': {},
-        }
+        for key in self._callbacks:
+            self._callbacks[key].clear()
+            self._args[key].clear()
+        self._subscribers = {}
 
     def register(self):
         if self.subscriber is not None:
             return
-        rospy.logwarn(
-            "[{}] registering to /mercury/joy".format(rospy.get_name()))
-        self.subscriber=rospy.Subscriber(
+        self.subscriber = rospy.Subscriber(
             '/mercury/joy', MercuryJoy, self._joy_callback)
 
     def unregister(self):
         if self.subscriber is None:
             return
-        rospy.logwarn(
-            "[{}] unregistering from /mercury/joy".format(rospy.get_name()))
         self.subscriber.unregister()
-        del self.subscriber
-        self.subscriber=None
+        self.subscriber = None
 
     @staticmethod
     def spin():
@@ -106,7 +105,7 @@ class Joy:
 
 
 if __name__ == "__main__":
-    rospy.init_node("mercury_test_joy", anonymous = False)
+    rospy.init_node("mercury_test_joy", anonymous=False)
 
     def on_pressed():
         rospy.logwarn('pressed')
@@ -114,7 +113,7 @@ if __name__ == "__main__":
     def on_changed(value):
         rospy.logwarn(value)
 
-    controller=Joy(auto_zero = True)
+    controller = Joy(auto_zero=True)
     controller.on_pressed('x_button', on_pressed)
     controller.on_changed('left_x_axes', on_changed)
     controller.spin()
