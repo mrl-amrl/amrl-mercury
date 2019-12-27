@@ -1,11 +1,11 @@
 <launch>
     <arg name="xsense_device" default="/dev/xsense"/>
-    <arg name="laser_device" default="/dev/hokuyo_H0902975"/>
+    <arg name="laser_device" default="/dev/hokuyo_H0902975"/>    
 
-    <include file="$(find mercury_launch)/launch/xsens_driver.launch">
+    <!-- <include file="$(find mercury_launch)/launch/xsens_driver.launch">
         <arg name="device" value="$(arg xsense_device)"/>
         <arg name="respawn" value="true"/>
-    </include>
+    </include> -->
     
     <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
         <param name="reciver_main_board_port" type="int" value="3031"/>

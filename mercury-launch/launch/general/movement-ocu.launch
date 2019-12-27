@@ -1,13 +1,15 @@
 <launch>
     <arg name="joy_device" default="/dev/input/js0"/>
     <arg name="repeat_rate" default="40.0"/>
-    <arg name="joy_config" default="$(find mercury_trajectory)/config/joy.yaml"/>
     <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
+    <arg name="arka_config" default="$(find arka_manipulator)/config/joy_config.yaml"/>
 
     <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
         <param name="dev" value="$(arg joy_device)"/>
         <param name="autorepeat_rate" value="$(arg repeat_rate)"/>
     </node>
+
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
 
     <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
         <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>
@@ -15,9 +17,25 @@
     <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>
     <node pkg="mercury_power_management" type="power_manager.py" name="mercury_power_management"/>
 
-    <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
-    <node name="dynamic_reconfigure_load_joy" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_joy $(arg joy_config)" />
-
-    <node pkg="mercury_ocu_driver" type="ocu_driver_node.py" name="mercury_ocu_driver" respawn="true" respawn_delay="1">
+    <node pkg="arka_manipulator" name="manipulator" type="joy_manipulator_arka" output="screen" respawn="true" respawn_delay="1">
+        <rosparam command="load" file="$(arg arka_config)" />
+        <param name="main_board_ip" type="string" value="192.168.10.170" />
+        <param name="main_board_port" type="string" value="3030" />
+        <param name="sensor_board_ip" type="string" value="192.168.10.20" />
+        <param name="sensor_board_port" type="string" value="3030" />
+        <param name="joint1/ratio" type="int" value="2825" />
+        <param name="joint2/ratio" type="int" value="3900" />
+        <param name="joint3/ratio" type="int" value="2825" />
+        <param name="joint4/ratio" type="int" value="1" />
     </node>
+
+    <node pkg="mercury_ocu_driver" type="ocu_driver_node.py" name="mercury_ocu_driver" respawn="true" respawn_delay="1"/>
+    <node pkg="mercury_dynparam" type="dynparam" name="mercury_dynparam">
+        <param name="trajectory_joy" value="mercury_joy;$(find mercury_trajectory)/config/joy.yaml"/>
+        <param name="manipulator_joy" value="mercury_joy;$(find arka_manipulator)/config/joy_new_config.yaml"/>
+    </node>
+    <node pkg="mercury_mode_changer" type="mode_changer" name="mercury_mode_changer">
+        <param name="back_button" value="back_button"/>
+    </node>
+    <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
 </launch>

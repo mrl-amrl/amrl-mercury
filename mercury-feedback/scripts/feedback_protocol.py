@@ -113,25 +113,25 @@ class FeedBackProtocol:
         self.epos_position.front_arm = data_decimal[14]
         self.epos_position.rear_arm = data_decimal[15]
         self.epos_position.manip_joint1 = byte_to_variable(
-            data_decimal[16], data_decimal[17])
-        self.epos_position.manip_joint2 = byte_to_variable(
             data_decimal[18], data_decimal[19])
-        self.epos_position.manip_joint3 = byte_to_variable(
+        self.epos_position.manip_joint2 = byte_to_variable(
             data_decimal[20], data_decimal[21])
+        self.epos_position.manip_joint3 = byte_to_variable(
+            data_decimal[22], data_decimal[23])
 
-        self.battery.power_battery = data_decimal[24]
-        self.battery.signal_battery = data_decimal[25]
+        self.battery.power_battery = data_decimal[26]
+        self.battery.signal_battery = data_decimal[27]
 
         self.current.right_traction = byte_to_variable(
-            data_decimal[26], data_decimal[27])
-        self.current.left_traction = byte_to_variable(
             data_decimal[28], data_decimal[29])
-        self.current.manip_joint1 = byte_to_variable(
+        self.current.left_traction = byte_to_variable(
             data_decimal[30], data_decimal[31])
-        self.current.manip_joint2 = byte_to_variable(
+        self.current.manip_joint1 = byte_to_variable(
             data_decimal[32], data_decimal[33])
-        self.current.manip_joint3 = byte_to_variable(
+        self.current.manip_joint2 = byte_to_variable(
             data_decimal[34], data_decimal[35])
+        self.current.manip_joint3 = byte_to_variable(
+            data_decimal[36], data_decimal[37])
         return data_decimal
 
     def deserilise_sensor_board_data(self):
