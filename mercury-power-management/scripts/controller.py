@@ -1,5 +1,6 @@
 import rospy
 
+from mercury import logger
 from socket_connection import PowerManagementConnection
 from mercury_common.srv import SetEnabled
 
@@ -20,19 +21,23 @@ class PowerController:
         self.power_connection.send()
 
     def service_handler(self, name):
-        def handler(data):
+        def handler(data):           
+            value = 1 if data.enabled else 0 
             if name == 'epos_reset':
-                self.power_connection.epos_reset = data.enabled
+                self.power_connection.epos_reset = value
             elif name == 'emergency':
-                self.power_connection.emg_stop = data.enabled
+                self.power_connection.emg_stop = value
             elif name == 'front_led':
-                self.power_connection.led_state = data.enabled
+                self.power_connection.led_state = value
             elif name == 'laser':
-                self.power_connection.laser = data.enabled
+                self.power_connection.laser = value
             elif name == 'pc':
-                self.power_connection.pc = data.enabled
+                self.power_connection.pc = value
             elif name == 'video_server':
-                self.power_connection.video_server = data.enabled
+                self.power_connection.video_server = value
+            else:
+                return False
+            logger.log_warn('sending {} for {}'.format(data.enabled, name))
             self.power_connection.send()
             return data.enabled
         return handler

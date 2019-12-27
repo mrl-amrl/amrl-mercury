@@ -1,5 +1,6 @@
 import rospy
 
+from mercury import logger
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from mercury_joy.cfg import JoyConfig
 from mercury_joy.msg import Joy as MercuryJoy
@@ -75,7 +76,7 @@ class JoyController:
             axes_to_button = self._extract_axes_to_button_config(
                 axes_to_button)
             if not axes_to_button:
-                rospy.logerr('bad axes_to_button configuration.')
+                logger.log_error('bad axes_to_button configuration.')
             else:
                 # the structure of each item is like:
                 # {
@@ -92,7 +93,7 @@ class JoyController:
         map_axes = self._extract_map_axes_config(
             str(config['map_axes']))
         if not map_axes:
-            rospy.logerr('bad map_axes configuration.')
+            logger.log_error('bad map_axes configuration.')
         else:
             self.map_axes = map_axes
         return config
@@ -111,12 +112,12 @@ class JoyController:
         axes = list(data.axes)
 
         for key in self.first_run:
-            if not self.first_run[key]:
-                continue
+            # if not self.first_run[key]:
+                # continue
             if axes[key] == 0.0:
                 axes[key] = 1.0
-            else:
-                self.first_run[key] = False
+            # else:
+                # self.first_run[key] = False
 
         for idx, button in enumerate(data.buttons):
             if idx < len(self.button_names):

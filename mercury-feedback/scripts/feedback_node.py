@@ -5,6 +5,7 @@ import socket
 import time
 import ping
 import threading
+from mercury import logger
 from timeout import timeout
 from std_msgs.msg import UInt8
 from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
@@ -331,4 +332,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         rospy.signal_shutdown('keyboard interrupt')
     except rospy.ROSException as err:
-        rospy.logerr("[mercury-feedback] {}".format(err))
+        logger.log_error("{}".format(err))
