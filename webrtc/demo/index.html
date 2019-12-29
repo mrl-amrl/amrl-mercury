@@ -1,0 +1,31 @@
+<html>
+
+<head>
+    <title>WebRtcStreamer</title>
+</head>
+
+<body>
+    <video id="video0"></video>
+    <video id="video1"></video>
+
+    <script src="request.min.js"></script>
+    <script src="adapter.min.js"></script>
+    <script src="webrtcstreamer.js"></script>
+    <script src="webrtc-config.js"></script>
+    <script>
+        var webRtcServerFast;
+        var webRtcServerSlow;
+        window.onload = function () {
+            webRtcServerFast = new WebRtcStreamer("video0", "http://localhost:8000");
+            webRtcServerFast.connect("rtsp://root:@mrl2019@192.168.10.94/live.sdp");
+            webRtcServerSlow = new WebRtcStreamer("video1", "http://localhost:8000");
+            webRtcServerSlow.connect("rtsp://root:@mrl2019@192.168.10.91/live.sdp");
+        }
+        window.onbeforeunload = function () {
+            webRtcServerFast.disconnect();
+            webRtcServerSlow.disconnect();
+        }
+    </script>
+</body>
+
+</html>
