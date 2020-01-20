@@ -9,7 +9,7 @@ def get_simple_cmd_output(cmd, stderr=STDOUT):
 
 def get_ping_time(host):
     host = host.split(':')[0]
-    cmd = "fping {host} -C 3 -q".format(host=host)
+    cmd = "fping {host} -t 100 -C 1 -q".format(host=host)
     result = str(get_simple_cmd_output(cmd)).replace('\\', '').split(':')[-1].replace("n'", '').replace("-",
                                                                                                         '').replace(
         "b''", '').split()

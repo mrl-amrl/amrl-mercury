@@ -9,7 +9,7 @@
     
     <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
         <param name="reciver_main_board_port" type="int" value="3031"/>
-        <param name="reciver_sensor_board_port" type="int" value="3040"/>
+        <param name="reciver_sensor_board_port" type="int" value="3033"/>
         <param name="main_board_available" type="bool" value="true"/>
         <param name="sensor_board_available" type="bool" value="true"/>
         <param name="queue_size" type="int" value="10"/>

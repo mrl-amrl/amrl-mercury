@@ -13,6 +13,11 @@ add_message_files(
   Joy.msg
 )
 
+add_service_files(
+  FILES
+  Rumble.srv
+)
+
 generate_dynamic_reconfigure_options(
   cfg/Joy.cfg
 )

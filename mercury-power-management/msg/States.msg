@@ -4,3 +4,4 @@ bool epos_reset
 bool pc
 bool laser
 bool video_server
+bool manipulator_reset
