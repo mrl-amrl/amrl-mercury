@@ -2,6 +2,17 @@ import rospy
 from mercury_joy.msg import Joy as MercuryJoy
 
 
+def fix_name(name):
+    name = name.strip()    
+    name = name.lower()
+    return name
+
+
+def parse_buttons(buttons):
+    buttons = buttons.split(" ")
+    return buttons
+
+
 class Joy:
     def __init__(self, do_register=True, auto_zero=False):
         self._callbacks = {
@@ -26,16 +37,19 @@ class Joy:
     def _joy_callback(self, data):
         # TODO: mutex
         buttons = data.button_names
-        if len(self._callbacks['buttons']) + len(self._callbacks['press_btns']):
+        if len(self._callbacks['buttons']):
+            for user_button in self._callbacks['buttons']:
+                user_button_set = set(parse_buttons(user_button))
+                if user_button_set <= set(buttons):
+                     self._callbacks['buttons'][user_button](
+                        *self._args['buttons'][user_button])
+
+        if len(self._callbacks['press_btns']):
             diff_list = list(set(buttons) - set(self.last_button_states))
-            for button in buttons:
-                if button in self._callbacks['press_btns']:
-                    if button in diff_list:
-                        self._callbacks['press_btns'][button](
-                            *self._args['press_btns'][button])
-                if button in self._callbacks['buttons']:
-                    self._callbacks['buttons'][button](
-                        *self._args['buttons'][button])
+            for button_pressed in self._callbacks['press_btns']:
+                if (button_pressed in buttons) and button_pressed in diff_list:
+                    self._callbacks['press_btns'][button_pressed](
+                        *self._args['press_btns'][button_pressed])
             self.last_button_states = buttons
 
         axes = data.axes_names
@@ -61,14 +75,17 @@ class Joy:
             subscriber(data)
 
     def on_pressed(self, button_name, callback, *args):
+        button_name = fix_name(button_name)
         self._callbacks['press_btns'][button_name] = callback
         self._args['press_btns'][button_name] = args
 
     def on_key_down(self, button_name, callback, *args):
+        button_name = fix_name(button_name)
         self._callbacks['buttons'][button_name] = callback
         self._args['buttons'][button_name] = args
 
     def on_changed(self, axes_name, callback, *args):
+        axes_name = fix_name(axes_name)
         self._callbacks['axes'][axes_name] = callback
         self._args['axes'][axes_name] = args
 
@@ -76,6 +93,7 @@ class Joy:
         self._subscribers[id(callback)] = callback
 
     def unsubscribe(self, name):
+        name = fix_name(name)
         for key in self._callbacks:
             if name in self._callbacks[key]:
                 del self._callbacks[key][name]

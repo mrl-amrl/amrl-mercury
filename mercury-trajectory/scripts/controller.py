@@ -30,12 +30,8 @@ class TrajectoryController:
             'btn_both_flipper_down': 'btn_both_flipper_down',
             'btn_epos_reset': 'btn_epos_reset',
         }
-
-        self.is_armed = False
+        
         self.enable = False
-
-        rospy.Service("/mercury/trajectory/arm_enable",
-                      SetEnabled, self._serive_callback)
         rospy.Service("/mercury/trajectory/enable",
                       SetEnabled, self._enable_service)
 
@@ -63,13 +59,6 @@ class TrajectoryController:
             self.joy.register()
         else:
             self.joy.unregister()
-        return data.enabled
-
-    def _serive_callback(self, data):
-        self.is_armed = data.enabled
-        logger.log_warn(
-            "sevice called for 'is_armed' with {}, sending ...".format(data.enabled))
-        # return not self.power_controller.send('emergency', not self.is_armed)
         return data.enabled
 
     def axes_change(self, value, name):
@@ -133,16 +122,14 @@ class TrajectoryController:
             msg.arm_rear = self.commands['arm_rear_direction']
             msg.left = left_velocity
             msg.right = right_velocity
-            msg.armed = self.is_armed
             self.publisher.publish(msg)
 
-        if self.is_armed:
-            self.movement_connection.send(
-                left_velocity=left_velocity,
-                right_velocity=right_velocity,
-                arm_front_direction=self.commands['arm_front_direction'],
-                arm_rear_direction=self.commands['arm_rear_direction'],
-            )
+        self.movement_connection.send(
+            left_velocity=left_velocity,
+            right_velocity=right_velocity,
+            arm_front_direction=self.commands['arm_front_direction'],
+            arm_rear_direction=self.commands['arm_rear_direction'],
+        )    
 
     def epos_reset(self):
         self.power_controller.send('epos_reset', True)

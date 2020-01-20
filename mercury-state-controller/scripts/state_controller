@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+import rospy
+from controller import StateController
+
+
+if __name__ == "__main__":
+    rospy.init_node("mercury_state_controller", anonymous=False)
+
+    controller = StateController()    
+    controller.spin()

@@ -8,7 +8,7 @@ import threading
 from mercury import logger
 from timeout import timeout
 from std_msgs.msg import UInt8
-from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
+from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback, Ping
 from mercury_common.srv import SetEnabled
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
@@ -21,7 +21,7 @@ class MRLRobotFeedBack:
         main_port, sensor_port, queue_size = self.get_params()
         self.feedback_protocol = FeedBackProtocol(main_port, sensor_port)
         self.ping_sub = rospy.Publisher(
-            '/feedback/ping', Int16, queue_size=queue_size)
+            '/feedback/ping', Ping, queue_size=queue_size)
         self.movement_pub = rospy.Publisher(
             '/feedback/movement', MovementFeedback, queue_size=queue_size)
         self.manipulator_pub = rospy.Publisher(
@@ -128,7 +128,7 @@ class MRLRobotFeedBack:
             '~reciver_main_board_port', 3031)
         reciver_sensor_board_port = rospy.get_param(
             '~reciver_sensor_board_port', 3033)
-        queue_size = int(rospy.get_param('~queue_size', 10))
+        queue_size = int(rospy.get_param('~queue_size', 2))
         return reciver_main_board_port, reciver_sensor_board_port, queue_size
 
     @staticmethod
@@ -290,15 +290,17 @@ class MRLRobotFeedBack:
         return "Unknown error"
 
     def calculate_ping(self):
-        rate = rospy.Rate(2)
-        while not self.exit_thread:
-            time_result = ping.get_ping_time('192.168.10.170')
-            if time_result < 1:
-                time_result = 1
+        rate = rospy.Rate(0.5)
+        while not self.exit_thread:            
+            if self.ping_sub.get_num_connections() == 0:                
+                pass
             else:
-                time_result = int(time_result)
-            if self.ping_sub.get_num_connections() > 0:
-                self.ping_sub.publish(time_result)
+                msg = Ping()
+                t = ping.get_ping_time('192.168.10.170')                
+                msg.main_board = int(t) if t > 1 else 1
+                t = ping.get_ping_time('192.168.10.20')
+                msg.sensor_board = int(t) if t > 1 else 1
+                self.ping_sub.publish(msg)
             rate.sleep()
         
     def shutdown(self):

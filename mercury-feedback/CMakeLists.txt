@@ -14,6 +14,7 @@ add_message_files(
     ManipulatorStatus.msg
     MovementFeedback.msg
     RobotsFeedback.msg
+    Ping.msg
 )
 
 generate_messages(

@@ -7,7 +7,7 @@ from mercury_common.srv import SetEnabled
 
 class PowerController:
     def __init__(self):
-        for name in ['epos_reset', 'emergency', 'front_led', 'laser', 'pc', 'video_server']:
+        for name in ['epos_reset', 'emergency', 'front_led', 'laser', 'pc', 'video_server', 'manipulator_reset']:
             rospy.Service(
                 "/mercury/power/" + name,
                 SetEnabled,
@@ -19,12 +19,21 @@ class PowerController:
             port=int(rospy.get_param('~board_port', '3024')),
         )
         self.power_connection.send()
-
+    
+    def spin(self):
+        rospy.spin()
+        # rate = rospy.Rate(100)
+        # while not rospy.is_shutdown():
+        #     self.power_connection.send()
+        #     rate.sleep()
+    
     def service_handler(self, name):
         def handler(data):           
             value = 1 if data.enabled else 0 
             if name == 'epos_reset':
-                self.power_connection.epos_reset = value
+                self.power_connection.epos_reset = 3 if data.enabled else 0 
+            elif name == 'manipulator_reset':
+                self.power_connection.epos_reset = 1 if data.enabled else 0 
             elif name == 'emergency':
                 self.power_connection.emg_stop = value
             elif name == 'front_led':
@@ -37,7 +46,6 @@ class PowerController:
                 self.power_connection.video_server = value
             else:
                 return False
-            logger.log_warn('sending {} for {}'.format(data.enabled, name))
             self.power_connection.send()
             return data.enabled
         return handler

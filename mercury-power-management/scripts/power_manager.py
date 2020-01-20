@@ -8,4 +8,4 @@ if __name__ == "__main__":
     rospy.init_node("mercury_power", anonymous=False)
 
     controller = PowerController()
-    rospy.spin()
+    controller.spin()

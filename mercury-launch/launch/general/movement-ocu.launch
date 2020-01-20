@@ -20,8 +20,8 @@
     <node pkg="arka_manipulator" name="manipulator" type="joy_manipulator_arka" output="screen" respawn="true" respawn_delay="1">
         <rosparam command="load" file="$(arg arka_config)" />
         <param name="main_board_ip" type="string" value="192.168.10.170" />
-        <param name="main_board_port" type="string" value="3030" />
         <param name="sensor_board_ip" type="string" value="192.168.10.20" />
+        <param name="main_board_port" type="string" value="3030" />
         <param name="sensor_board_port" type="string" value="3030" />
         <param name="joint1/ratio" type="int" value="2825" />
         <param name="joint2/ratio" type="int" value="3900" />
@@ -34,8 +34,9 @@
         <param name="trajectory_joy" value="mercury_joy;$(find mercury_trajectory)/config/joy.yaml"/>
         <param name="manipulator_joy" value="mercury_joy;$(find arka_manipulator)/config/joy_new_config.yaml"/>
     </node>
-    <node pkg="mercury_mode_changer" type="mode_changer" name="mercury_mode_changer">
+    <node pkg="mercury_state_controller" type="state_controller" name="mercury_state_controller">
         <param name="back_button" value="back_button"/>
+        <param name="arm_toggler" value="left_axes_button right_axes_button"/>
     </node>
     <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
 </launch>
