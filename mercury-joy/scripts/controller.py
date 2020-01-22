@@ -1,5 +1,4 @@
 import rospy
-from rumble import RumbleController
 from mercury import logger
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from mercury_joy.cfg import JoyConfig
@@ -45,29 +44,10 @@ class JoyController:
                 default='1'
             ))
         )
-
-        self.rumble = RumbleController('/dev/input/event6')
-        rospy.Service('/mercury/joy/rumble', Rumble, self._rumble_handler)
-
         # register a callback for ros shutdown
         rospy.on_shutdown(self.shutdown)
 
         self.message = MercuryJoy()
-
-    def _rumble_handler(self, data):
-        hasError = False
-        try:
-            self.rumble.do(data.duration)
-        except Exception as err:
-            logger.log_error("rumble has error: " + str(err))
-            logger.log_warn("re-opening joystick event file ...")
-            try:
-                self.rumble = RumbleController('/dev/input/event6')
-                self.rumble.do(data.duration)
-                hasError = False
-            except Exception:
-                hasError = True            
-        return hasError
 
     def configuration(self, config, level):
         self.axes_button_trigger = {}
