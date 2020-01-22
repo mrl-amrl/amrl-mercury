@@ -12,7 +12,10 @@
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
 
     <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
-        <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>
+        <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>        
+    </node>
+    <node pkg="xbox_controller" type="controller" name="xbox_rumble_controller">
+        <param name="service_name" value="/mercury/joy/rumble"/>
     </node>
     <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>
     <node pkg="mercury_power_management" type="power_manager.py" name="mercury_power_management"/>

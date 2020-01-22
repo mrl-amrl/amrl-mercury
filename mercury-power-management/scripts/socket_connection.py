@@ -44,5 +44,4 @@ class PowerManagementConnection:
                 msg.laser = self.laser == 1
                 msg.video_server = self.video_server == 1
                 self.publisher.publish(msg)
-        rospy.logwarn(map(int, datagram))
         self.power_socket.sendto(datagram, (self.target, self.port))
