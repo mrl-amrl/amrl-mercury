@@ -4,11 +4,10 @@ import rospy
 import socket
 import time
 import ping
-import threading
 from mercury import logger
 from timeout import timeout
 from std_msgs.msg import UInt8
-from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback, Ping
+from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
 from mercury_common.srv import SetEnabled
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
@@ -20,8 +19,6 @@ class MRLRobotFeedBack:
     def __init__(self):
         main_port, sensor_port, queue_size = self.get_params()
         self.feedback_protocol = FeedBackProtocol(main_port, sensor_port)
-        self.ping_sub = rospy.Publisher(
-            '/feedback/ping', Ping, queue_size=queue_size)
         self.movement_pub = rospy.Publisher(
             '/feedback/movement', MovementFeedback, queue_size=queue_size)
         self.manipulator_pub = rospy.Publisher(
@@ -38,7 +35,6 @@ class MRLRobotFeedBack:
         rospy.Service('/feedback/reset_flipper', SetEnabled, self.reset_flipper_handler)
         self.main_board = rospy.get_param('main_board_available', True)
         self.sensor_board = rospy.get_param('sensor_board_available', False)
-        self.exit_thread = False
 
     def sensor_board_feedback(self):
         if self.feedback_co2.get_num_connections() > 0:
@@ -289,30 +285,11 @@ class MRLRobotFeedBack:
             return "Auto tuning torque invalid error"
         return "Unknown error"
 
-    def calculate_ping(self):
-        rate = rospy.Rate(0.5)
-        while not self.exit_thread:            
-            if self.ping_sub.get_num_connections() == 0:                
-                pass
-            else:
-                msg = Ping()
-                t = ping.get_ping_time('192.168.10.170')                
-                msg.main_board = int(t) if t > 1 else 1
-                t = ping.get_ping_time('192.168.10.20')
-                msg.sensor_board = int(t) if t > 1 else 1
-                self.ping_sub.publish(msg)
-            rate.sleep()
-        
     def shutdown(self):
-        self.exit_thread = True
         self.feedback_protocol.socket_main_board.close()
         self.feedback_protocol.socket_sensor_board.close()
     
     def spin(self):
-        thread = threading.Thread(target=self.calculate_ping)
-        thread.daemon = True
-        thread.start()
-
         while not rospy.is_shutdown():
             if self.main_board:
                 self.feedback_protocol.deserilise_main_board_data()

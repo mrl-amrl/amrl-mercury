@@ -42,4 +42,6 @@
         <param name="arm_toggler" value="left_axes_button right_axes_button"/>
     </node>
     <node name="dynamic_reconfigure_load_trajectory" pkg="dynamic_reconfigure" type="dynparam" args="load /mercury_trajectory $(arg trajectory_config)" />
+
+    <node pkg="mercury_netping" type="netping.py" name="mercury_netping" respawn="true" respawn_delay="1"/>
 </launch>

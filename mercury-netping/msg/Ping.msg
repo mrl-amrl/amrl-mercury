@@ -1,0 +1,2 @@
+int16 main_board
+int16 sensor_board
