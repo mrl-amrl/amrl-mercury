@@ -4,22 +4,6 @@
     <arg name="trajectory_config" default="$(find mercury_trajectory)/config/trajectory.yaml"/>
     <arg name="arka_config" default="$(find arka_manipulator)/config/joy_config.yaml"/>
 
-    <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
-        <param name="dev" value="$(arg joy_device)"/>
-        <param name="autorepeat_rate" value="$(arg repeat_rate)"/>
-    </node>
-
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
-
-    <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
-        <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>        
-    </node>
-    <node pkg="xbox_controller" type="controller" name="xbox_rumble_controller">
-        <param name="service_name" value="/mercury/joy/rumble"/>
-    </node>
-    <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>
-    <node pkg="mercury_power_management" type="power_manager.py" name="mercury_power_management"/>
-
     <node pkg="arka_manipulator" name="manipulator" type="joy_manipulator_arka" output="screen" respawn="true" respawn_delay="1">
         <rosparam command="load" file="$(arg arka_config)" />
         <param name="main_board_ip" type="string" value="192.168.10.170" />
@@ -31,6 +15,31 @@
         <param name="joint3/ratio" type="int" value="2825" />
         <param name="joint4/ratio" type="int" value="1" />
     </node>
+
+    <node pkg="mercury_feedback" type="feedback_node.py" name="mercury_feedback" respawn="true" respawn_delay="1">
+        <param name="reciver_main_board_port" type="int" value="3031"/>
+        <param name="reciver_sensor_board_port" type="int" value="3033"/>
+        <param name="main_board_available" type="bool" value="true"/>
+        <param name="sensor_board_available" type="bool" value="true"/>
+        <param name="queue_size" type="int" value="10"/>
+        <remap from="/feedback/co2" to="/mercury/gui/co2"/>
+    </node>
+
+    <node pkg="joy" type="joy_node" name="ros_joy" respawn="true" respawn_delay="1">
+        <param name="dev" value="$(arg joy_device)"/>
+        <param name="autorepeat_rate" value="$(arg repeat_rate)"/>
+    </node>
+
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+    <node pkg="mercury_joy" type="joy-node.py" name="mercury_joy">
+        <param name="mercury_publish_rate" value="$(arg repeat_rate)"/>
+    </node>
+    <node pkg="xbox_controller" type="controller" name="xbox_rumble_controller">
+        <param name="service_name" value="/mercury/joy/rumble"/>
+    </node>
+    <node pkg="mercury_trajectory" type="trajectory-node.py" name="mercury_trajectory"/>
+    <node pkg="mercury_power_management" type="power_manager.py" name="mercury_power_management"/>
 
     <node pkg="mercury_ocu_driver" type="ocu_driver_node.py" name="mercury_ocu_driver" respawn="true" respawn_delay="1"/>
     <node pkg="mercury_dynparam" type="dynparam" name="mercury_dynparam">
