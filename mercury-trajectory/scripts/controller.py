@@ -30,7 +30,9 @@ class TrajectoryController:
             'btn_both_flipper_down': 'btn_both_flipper_down',
             'btn_epos_reset': 'btn_epos_reset',
         }
-        
+        self.angular_speed_factor = float(rospy.get_param('angular_speed_factor', '1.0'))
+        self.linear_speed_factor = float(rospy.get_param('linear_speed_factor', '1.0'))
+
         self.enable = False
         rospy.Service("/mercury/trajectory/enable",
                       SetEnabled, self._enable_service)
@@ -100,10 +102,12 @@ class TrajectoryController:
             self.commands['angular'] = 1
 
     def send(self):
+        angular_speed = int(self.max_speed * self.angular_speed_factor)
+        linear_speed = int(self.max_speed * self.linear_speed_factor)
         left_velocity = self.commands['linear'] * \
-            self.max_speed - self.commands['angular'] * self.max_speed
+            linear_speed - self.commands['angular'] * angular_speed
         right_velocity = self.commands['linear'] * \
-            self.max_speed + self.commands['angular'] * self.max_speed
+            linear_speed + self.commands['angular'] * angular_speed
         if left_velocity > 100:
             left_velocity = 100
         elif left_velocity < -100:
@@ -116,8 +120,8 @@ class TrajectoryController:
         if self.publisher.get_num_connections() > 0:
             msg = TrajectoryData()
             msg.speed = self.max_speed
-            msg.angular = self.commands['angular'] * self.max_speed
-            msg.linear = self.commands['linear'] * self.max_speed
+            msg.angular = self.commands['angular'] * angular_speed
+            msg.linear = self.commands['linear'] * linear_speed
             msg.arm_front = self.commands['arm_front_direction']
             msg.arm_rear = self.commands['arm_rear_direction']
             msg.left = left_velocity
@@ -129,7 +133,7 @@ class TrajectoryController:
             right_velocity=right_velocity,
             arm_front_direction=self.commands['arm_front_direction'],
             arm_rear_direction=self.commands['arm_rear_direction'],
-        )    
+        )
 
     def epos_reset(self):
         self.power_controller.send('epos_reset', True)
