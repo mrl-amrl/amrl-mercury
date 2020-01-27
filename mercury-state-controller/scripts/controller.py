@@ -2,7 +2,7 @@ import rospy
 import time
 
 from mercury import Joy, PowerController
-from mercury_joy.srv import Rumble
+from xbox_controller.srv import Rumble
 from mercury_common.srv import SetEnabled
 from mercury_dynparam.srv import Default
 from mercury_state_controller.msg import State

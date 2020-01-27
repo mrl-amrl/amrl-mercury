@@ -3,7 +3,6 @@ from mercury import logger
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from mercury_joy.cfg import JoyConfig
 from mercury_joy.msg import Joy as MercuryJoy
-from mercury_joy.srv import Rumble
 from sensor_msgs.msg import JoyFeedbackArray
 from sensor_msgs.msg import Joy as ROSJoy
 
