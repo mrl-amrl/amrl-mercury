@@ -8,7 +8,7 @@ class MovementConnection:
             family=socket.AF_INET,
             type=socket.SOCK_DGRAM
         )
-        self.movement_socket.bind(('192.168.10.10', port))
+        self.movement_socket.bind(('0.0.0.0', port))
         self.port = port
         self.target = target
 
