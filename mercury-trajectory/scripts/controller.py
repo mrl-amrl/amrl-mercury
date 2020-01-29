@@ -56,11 +56,11 @@ class TrajectoryController:
     def _enable_service(self, data):
         logger.log_warn(
             "sevice called for 'enable' with {}".format(data.enabled))
-        self.enable = data.enabled
-        if self.enable:
+        if data.enabled:
             self.joy.register()
         else:
             self.joy.unregister()
+        self.enable = data.enabled
         return data.enabled
 
     def axes_change(self, value, name):
@@ -231,7 +231,15 @@ class TrajectoryController:
 
     def spin(self):
         rate = rospy.Rate(30)
+        is_stop = True
         while not rospy.is_shutdown():
-            self.send()
-            self.commands = self.new_message()
+            if self.enable:
+                self.send()
+                self.commands = self.new_message()
+                is_stop = False
+            elif not is_stop:
+                self.commands = self.new_message()
+                for _ in range(5):
+                    self.send()
+                is_stop = True
             rate.sleep()

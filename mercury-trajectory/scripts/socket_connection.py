@@ -1,5 +1,4 @@
 import socket
-from mercury import logger
 
 
 class MovementConnection:
