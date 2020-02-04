@@ -5,7 +5,7 @@ import socket
 import time
 import ping
 from mercury import logger
-from mercury_feedback.msg import Ping
+from mercury_common.msg import Ping
 
 
 class RobotNetPing:
