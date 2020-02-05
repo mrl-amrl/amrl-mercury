@@ -5,22 +5,9 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   rospy
   sensor_msgs
-  message_generation
 )
 
-add_message_files(
-  FILES
-    EposError.msg
-    ManipulatorStatus.msg
-    MovementFeedback.msg
-    RobotsFeedback.msg
-    Ping.msg
-)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 catkin_package(
 )

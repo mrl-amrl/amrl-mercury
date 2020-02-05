@@ -7,7 +7,7 @@ import ping
 from mercury import logger
 from timeout import timeout
 from std_msgs.msg import UInt8
-from mercury_feedback.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
+from mercury_common.msg import ManipulatorStatus, MovementFeedback, EposError, RobotsFeedback
 from mercury_common.srv import SetEnabled
 from std_msgs.msg import Int16
 from feedback_protocol import FeedBackProtocol
