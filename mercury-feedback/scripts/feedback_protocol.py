@@ -94,7 +94,7 @@ class FeedBackProtocol:
         except socket.error as err:
             logger.log_warn(err)
             return
-        logger.log_warn(len(data))
+
         data_decimal = map(ord, data)        
         self.epos_fault.traction_right = byte_to_variable(
             data_decimal[0], data_decimal[1])
@@ -126,12 +126,6 @@ class FeedBackProtocol:
             data_decimal[28], data_decimal[29])
         self.current.left_traction = byte_to_variable(
             data_decimal[30], data_decimal[31])
-        # self.current.manip_joint1 = byte_to_variable(
-        #     data_decimal[32], data_decimal[33])
-        # self.current.manip_joint2 = byte_to_variable(
-        #     data_decimal[34], data_decimal[35])
-        # self.current.manip_joint3 = byte_to_variable(
-        #     data_decimal[36], data_decimal[37])
         return data_decimal
 
     def deserilise_sensor_board_data(self):
