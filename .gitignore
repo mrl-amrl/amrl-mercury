@@ -106,5 +106,6 @@ venv.bak/
 
 .vscode
 node_modules
-mercury-gui
+mercury_gui
 backup
+mercury_test_launches
