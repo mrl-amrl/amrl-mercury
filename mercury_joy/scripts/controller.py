@@ -55,6 +55,8 @@ class JoyController:
         button_names = str(config['button_names'])
         self.button_names = [button_name.strip()
                              for button_name in button_names.split(',')]
+        
+        self.axes_threshold = config['axes_threshold']
 
         # get axes_names from dynamic-reconfigure server
         axes_names = str(config['axes_names'])
