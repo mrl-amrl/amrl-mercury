@@ -63,9 +63,11 @@ class StateController:
         self.is_armed = state
         self.rumble.call(500)
         if state:
+            self.power_controller.send('emergency', False)
             self.services[self.current_state].call(True)
             self.default_loader.call(self.default_keys[self.current_state])
         else:
+            self.power_controller.send('emergency', True)
             self.services['manipulator'].call(False)
             self.services['trajectory'].call(False)        
     
