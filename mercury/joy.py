@@ -101,8 +101,8 @@ class Joy:
 
     def unsubscribe_all(self):
         for key in self._callbacks:
-            self._callbacks[key].clear()
-            self._args[key].clear()
+            self._callbacks[key] = {}
+            self._args[key] = {}
         self._subscribers = {}
 
     def register(self):
