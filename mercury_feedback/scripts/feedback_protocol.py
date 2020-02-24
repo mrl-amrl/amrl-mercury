@@ -2,6 +2,7 @@
 import socket
 from mercury import logger
 
+
 def low_high_byte(integer):
     low_byte = integer & 0xFF
     high_byte = integer >> 8
@@ -62,6 +63,12 @@ class Torque:
         self.manip_joint3 = 0
 
 
+class MotorRPM:
+    def __init__(self):
+        self.left = 0
+        self.right = 0
+
+
 class SensorBoard:
     def __init__(self):
         self.overCurrent_joint4 = 0
@@ -80,9 +87,10 @@ class FeedBackProtocol:
         self.current = Current()
         self.torque = Torque()
         self.sensor_board = SensorBoard()
+        self.motor_rpm = MotorRPM()
 
         self.socket_main_board = socket.socket(
-            socket.AF_INET, socket.SOCK_DGRAM)        
+            socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_main_board.bind(('0.0.0.0', reciver_main_board_port))
         self.socket_sensor_board = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)
@@ -95,7 +103,7 @@ class FeedBackProtocol:
             logger.log_warn(err)
             return
 
-        data_decimal = map(ord, data)        
+        data_decimal = map(ord, data)
         self.epos_fault.traction_right = byte_to_variable(
             data_decimal[0], data_decimal[1])
         self.epos_fault.traction_left = byte_to_variable(
@@ -126,6 +134,12 @@ class FeedBackProtocol:
             data_decimal[28], data_decimal[29])
         self.current.left_traction = byte_to_variable(
             data_decimal[30], data_decimal[31])
+
+        self.motor_rpm.left = byte_to_variable(
+            data_decimal[32], data_decimal[33])
+        self.motor_rpm.right = byte_to_variable(
+            data_decimal[34], data_decimal[35])
+        
         return data_decimal
 
     def deserilise_sensor_board_data(self):
@@ -134,7 +148,7 @@ class FeedBackProtocol:
         except socket.error as err:
             logger.log_warn(err)
             return
-            
+
         data_decimal = map(ord, data)
         self.sensor_board.overCurrent_joint4 = data_decimal[0]
         self.sensor_board.overCurrent_joint5 = data_decimal[1]

@@ -57,6 +57,8 @@ class MRLRobotFeedBack:
         movement_msg = MovementFeedback()
         movement_msg.position.append(front)
         movement_msg.position.append(rear)
+        movement_msg.left_rpm = self.feedback_protocol.motor_rpm.left
+        movement_msg.right_rpm = self.feedback_protocol.motor_rpm.right
         if self.movement_pub.get_num_connections() > 0:
             self.movement_pub.publish(movement_msg)
 
