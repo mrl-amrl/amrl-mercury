@@ -29,6 +29,7 @@ class TrajectoryController:
             'btn_both_flipper_up': 'btn_both_flipper_up',
             'btn_both_flipper_down': 'btn_both_flipper_down',
             'btn_epos_reset': 'btn_epos_reset',
+            'btn_front_led': 'btn_front_led',
         }
         self.angular_speed_factor = float(rospy.get_param('angular_speed_factor', '1.0'))
         self.linear_speed_factor = float(rospy.get_param('linear_speed_factor', '1.0'))
@@ -52,6 +53,8 @@ class TrajectoryController:
             queue_size=10
         )
         self.commands = self.new_message()
+        self.current_led_state = False
+        self.power_controller.send('front_led', self.current_led_state)
 
     def _enable_service(self, data):
         logger.log_warn(
@@ -100,6 +103,11 @@ class TrajectoryController:
             self.commands['angular'] = -1
         elif name == 'btn_turn_left':
             self.commands['angular'] = 1
+        
+        if name == 'btn_front_led':
+            logger.log_warn(name)
+            self.current_led_state = not self.current_led_state
+            self.power_controller.send('front_led', self.current_led_state)
 
     def send(self):
         angular_speed = int(self.max_speed * self.angular_speed_factor)
@@ -201,6 +209,11 @@ class TrajectoryController:
             self.key_items['btn_turn_left'],
             self.button_change,
             'btn_turn_left'
+        )
+        self.joy.on_pressed(
+            self.key_items['btn_front_led'],
+            self.button_change,
+            'btn_front_led'
         )
         self.joy.on_key_down(
             self.key_items['btn_turn_right'],
