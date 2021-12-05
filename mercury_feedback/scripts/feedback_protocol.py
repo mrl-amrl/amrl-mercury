@@ -17,6 +17,11 @@ def byte_to_variable(low_byte1, byte2, byte3=None, high_byte4=None):
     elif not byte3 == None and not high_byte4 == None:
         return (low_byte1 & 0xFF) + (byte2 << 8) + (byte3 << 16) + (high_byte4 << 24)
 
+class Power():
+    def __init__(self):
+        self.video_server = 0
+        self.laser = 0
+        self.pc = 0
 
 class EposFault():
     def __init__(self):
@@ -67,7 +72,9 @@ class MotorRPM:
     def __init__(self):
         self.left = 0
         self.right = 0
-
+        self.manip_joint1 = 0
+        self.manip_joint2 = 0
+        self.manip_joint3 = 0
 
 class SensorBoard:
     def __init__(self):
@@ -88,7 +95,7 @@ class FeedBackProtocol:
         self.torque = Torque()
         self.sensor_board = SensorBoard()
         self.motor_rpm = MotorRPM()
-
+        self.power = Power()
         self.socket_main_board = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_main_board.bind(('0.0.0.0', reciver_main_board_port))
@@ -135,11 +142,35 @@ class FeedBackProtocol:
         self.current.left_traction = byte_to_variable(
             data_decimal[30], data_decimal[31])
 
+        self.current.manip_joint1 = byte_to_variable(data_decimal[32], data_decimal[33])
+        self.current.manip_joint2 = byte_to_variable(data_decimal[34], data_decimal[35])
+        self.current.manip_joint3 = byte_to_variable(data_decimal[36], data_decimal[37])
+
+        self.motor_rpm.manip_joint1 = byte_to_variable(data_decimal[38], data_decimal[39])
+        self.motor_rpm.manip_joint2 = byte_to_variable(data_decimal[40], data_decimal[41])
+        self.motor_rpm.manip_joint3 = byte_to_variable(data_decimal[42], data_decimal[43])
+
+        self.torque.manip_joint1 = byte_to_variable(data_decimal[44], data_decimal[45])
+        self.torque.manip_joint2 = byte_to_variable(data_decimal[46], data_decimal[47])
+        self.torque.manip_joint3 = byte_to_variable(data_decimal[48], data_decimal[49])
+
+        self.power.video_server = data_decimal[50]
+        self.power.laser = data_decimal[51]
+        self.power.pc = data_decimal[52]
+
+        self.current.front_arm = byte_to_variable(data_decimal[53], data_decimal[54])
+        self.current.rear_arm = byte_to_variable(data_decimal[55], data_decimal[56])
+
+        self.torque.front_arm = byte_to_variable(data_decimal[57], data_decimal[58])
+        self.torque.rear_arm = byte_to_variable(data_decimal[59], data_decimal[60])
+        self.torque.right_traction = byte_to_variable(data_decimal[61], data_decimal[62])
+        self.torque.left_traction = byte_to_variable(data_decimal[63], data_decimal[64])
+
         self.motor_rpm.left = byte_to_variable(
-            data_decimal[32], data_decimal[33])
+            data_decimal[65], data_decimal[66])
         self.motor_rpm.right = byte_to_variable(
-            data_decimal[34], data_decimal[35])
-        
+            data_decimal[67], data_decimal[68])
+
         return data_decimal
 
     def deserilise_sensor_board_data(self):
