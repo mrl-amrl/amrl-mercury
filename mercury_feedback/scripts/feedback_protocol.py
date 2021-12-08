@@ -111,6 +111,7 @@ class FeedBackProtocol:
             return
 
         data_decimal = map(ord, data)
+        # print('isssssssssssssssss',len(data_decimal))
         self.epos_fault.traction_right = byte_to_variable(
             data_decimal[0], data_decimal[1])
         self.epos_fault.traction_left = byte_to_variable(
@@ -136,7 +137,7 @@ class FeedBackProtocol:
 
         self.battery.power_battery = data_decimal[26]
         self.battery.signal_battery = data_decimal[27]
-
+        # print(data_decimal[26],data_decimal[27])
         self.current.right_traction = byte_to_variable(
             data_decimal[28], data_decimal[29])
         self.current.left_traction = byte_to_variable(
@@ -166,10 +167,10 @@ class FeedBackProtocol:
         self.torque.right_traction = byte_to_variable(data_decimal[61], data_decimal[62])
         self.torque.left_traction = byte_to_variable(data_decimal[63], data_decimal[64])
 
-        self.motor_rpm.left = byte_to_variable(
-            data_decimal[65], data_decimal[66])
-        self.motor_rpm.right = byte_to_variable(
-            data_decimal[67], data_decimal[68])
+        # self.motor_rpm.left = byte_to_variable(
+        #     data_decimal[65], data_decimal[66])
+        # self.motor_rpm.right = byte_to_variable(
+        #     data_decimal[67], data_decimal[68])
 
         return data_decimal
 
