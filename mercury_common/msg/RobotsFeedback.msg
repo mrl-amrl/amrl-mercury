@@ -8,8 +8,12 @@ float32 current_sum
 float32 current_joint0
 float32 current_joint1
 float32 current_joint2
+float32 current_rear_arm
+float32 current_front_arm
 int16 torque_right
 int16 torque_left
 int16 torque_joint0
 int16 torque_joint1
 int16 torque_joint2
+int16 torque_rear_arm
+int16 torque_front_arm

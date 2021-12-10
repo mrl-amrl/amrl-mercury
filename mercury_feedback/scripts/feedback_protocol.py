@@ -166,11 +166,8 @@ class FeedBackProtocol:
         self.torque.rear_arm = byte_to_variable(data_decimal[59], data_decimal[60])
         self.torque.right_traction = byte_to_variable(data_decimal[61], data_decimal[62])
         self.torque.left_traction = byte_to_variable(data_decimal[63], data_decimal[64])
-
-        # self.motor_rpm.left = byte_to_variable(
-        #     data_decimal[65], data_decimal[66])
-        # self.motor_rpm.right = byte_to_variable(
-        #     data_decimal[67], data_decimal[68])
+        self.motor_rpm.right = byte_to_variable(data_decimal[65],data_decimal[66])
+        self.motor_rpm.left = byte_to_variable(data_decimal[67],data_decimal[68])
 
         return data_decimal
 
