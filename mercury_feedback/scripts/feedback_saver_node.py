@@ -2,9 +2,8 @@
 # author amir sharifi
 
 import rospy
-from mrl_srvs.msg import RobotsFeedback, MovementFeedback, ManipulatorStatus
+from mercury_common.msg import RobotsFeedback, MovementFeedback, ManipulatorStatus
 from matplotlib import pyplot as plt
-import xlsxwriter
 from datetime import datetime
 import itertools
 import os
@@ -128,18 +127,21 @@ class FeedBackAnalysis:
         movement_rpm_df.to_csv(os.path.join(file_name, 'movement_rpm.csv'))
         manipulator_df.to_csv(os.path.join(file_name, 'manipulator.csv'))
 
+    @staticmethod
+    def spin():
+        rospy.spin()
 
 def main():
     robot_feedback_topic = rospy.get_param(
         node_name + '/robot_feedback_topic', '/feedback/robot')
-    movement_feedback_topic = rospy.get_params(
+    movement_feedback_topic = rospy.get_param(
         node_name + '/movement_feedback_topic', '/feedback/movement')
     manipulator_feedback_topic = rospy.get_param(
         node_name + '/manipulator_feedback_topic', '/feedback/manipulator')
 
     feed_back_analysis = FeedBackAnalysis(robot_feedback_topic,movement_feedback_topic,manipulator_feedback_topic)
     path_file = rospy.get_param(
-        node_name + '/path_to_save_data', '/home/opst/catkin_ws/src/mrl_robots_feedback/data/')
+        node_name + '/path_to_save_data', '/home/mrl/catkin_ws/src/amrl-mercury/mercury_feedback/data')
     
     exel_is_enable = rospy.get_param(node_name + '/exel_is_enable', True)
     plot_is_enable = rospy.get_param(node_name + '/plot_is_enable', True)
